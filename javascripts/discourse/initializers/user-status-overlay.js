@@ -20,10 +20,6 @@ export default {
           const hasStatus = status && (status.description || status.emoji);
           
           let placeholder = btn.querySelector('.status-placeholder-custom');
-          
-          // #region agent log
-          fetch('http://127.0.0.1:7931/ingest/89deca5e-9e6e-457a-abe7-f4a6e39bf6b5',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'bdd1ba'},body:JSON.stringify({sessionId:'bdd1ba',location:'user-status-overlay.js:31',message:'btn html',data:{html:btn.innerHTML},timestamp:Date.now(),runId:'run1',hypothesisId:'1'})}).catch(()=>{});
-          // #endregion
 
           if (!hasStatus) {
             // Wenn kein Status, zeige Platzhalter
@@ -35,9 +31,6 @@ export default {
               // Hänge es direkt an den Avatar-Container an, damit Positionierung perfekt stimmt
               const avatar = btn.querySelector('img.avatar');
               if (avatar && avatar.parentElement) {
-                // #region agent log
-                fetch('http://127.0.0.1:7931/ingest/89deca5e-9e6e-457a-abe7-f4a6e39bf6b5',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'bdd1ba'},body:JSON.stringify({sessionId:'bdd1ba',location:'user-status-overlay.js:42',message:'parent html',data:{html:avatar.parentElement.outerHTML, flex:getComputedStyle(avatar.parentElement).display},timestamp:Date.now(),runId:'run1',hypothesisId:'1'})}).catch(()=>{});
-                // #endregion
                 avatar.parentElement.style.position = 'relative';
                 // Verhindern, dass overflow: hidden des Parents das Icon abschneidet
                 avatar.parentElement.style.overflow = 'visible';
