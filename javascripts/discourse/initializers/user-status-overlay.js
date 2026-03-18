@@ -30,11 +30,17 @@ export default {
               
               // Hänge es direkt an den Avatar-Container an, damit Positionierung perfekt stimmt
               const avatar = btn.querySelector('img.avatar');
-              if (avatar && avatar.parentElement) {
-                avatar.parentElement.style.position = 'relative';
-                // Verhindern, dass overflow: hidden des Parents das Icon abschneidet
-                avatar.parentElement.style.overflow = 'visible';
-                avatar.parentElement.appendChild(placeholder);
+              if (avatar) {
+                // Den Wrapper des Avatars finden
+                const avatarWrapper = avatar.closest('.avatar-wrapper') || avatar.parentElement;
+                
+                if (avatarWrapper) {
+                  avatarWrapper.style.position = 'relative';
+                  avatarWrapper.style.overflow = 'visible';
+                  avatarWrapper.appendChild(placeholder);
+                } else {
+                  btn.appendChild(placeholder);
+                }
               } else {
                 btn.appendChild(placeholder);
               }
