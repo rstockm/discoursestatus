@@ -1,30 +1,30 @@
 /* Profilbild-Overlay und Platzhalter-Icon */
 
-#current-user, .d-header .current-user, .user-menu-toggle {
+#current-user, .d-header .current-user, .user-menu-toggle, .d-header .user-menu-toggle {
   position: relative;
-  overflow: visible; // Verhindert, dass das + Symbol abgeschnitten wird
+  overflow: visible !important; // Verhindert, dass das + Symbol abgeschnitten wird
 
-  // Platzhalter-Icon im unteren rechten Viertel, wenn kein Status gesetzt ist.
-  // Glimmer Header nutzt meist .user-status-background oder .user-status
-  &:not(:has(.user-status)):not(:has(.user-status-background)):not(:has(.user-status-message)) {
-    &::after {
-      content: "+";
-      position: absolute;
-      bottom: -2px;
-      right: -2px;
-      background-color: var(--primary-low);
-      color: var(--primary);
-      border-radius: 50%;
-      width: 16px;
-      height: 16px;
-      font-size: 14px;
-      line-height: 14px;
-      font-weight: bold;
-      text-align: center;
-      border: 1px solid var(--secondary);
-      pointer-events: none; // Klicks gehen durch auf den Button
-      z-index: 100;
-    }
+  // Platzhalter-Icon (wird jetzt per JavaScript injectet, um robuster zu sein)
+  .status-placeholder-custom {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    background-color: #e0e0e0; /* farblich ausgegraut */
+    color: darkgreen; /* dunkelgrünes + */
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 16px;
+    line-height: 16px;
+    font-weight: bold;
+    text-align: center;
+    border: 1px solid #b0b0b0;
+    pointer-events: none; // Klicks gehen durch auf den Button
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
   }
 
   // Cursor ändert sich zur Anzeige, dass die rechte Seite anders reagiert
