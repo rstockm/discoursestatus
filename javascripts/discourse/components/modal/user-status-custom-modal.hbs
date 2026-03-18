@@ -62,8 +62,8 @@
           <div class="inline-time-shortcuts">
             {{#each this.inlineTimeShortcuts as |shortcut|}}
               <DButton 
-                class="btn-default time-shortcut-btn" 
-                @action={{fn this.setInlineTime shortcut.time}}
+                class="btn-default time-shortcut-btn {{shortcut.activeClass}}" 
+                @action={{fn this.setInlineTime shortcut.id shortcut.time}}
               >
                 {{shortcut.name}}
               </DButton>

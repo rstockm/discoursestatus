@@ -130,8 +130,8 @@
     margin-top: 8px;
 
     .btn {
-      justify-content: center;
-      text-align: center;
+      justify-content: flex-start; /* Linksbündig */
+      text-align: left;            /* Linksbündig */
       padding: 8px 12px;
       width: 100%;
       background-color: var(--primary-low) !important; /* Grau hinterlegt */
@@ -141,6 +141,11 @@
       
       &:hover {
         background-color: var(--primary-low-mid) !important;
+      }
+      
+      &.active {
+        background-color: var(--primary-low-mid) !important;
+        border-color: var(--primary-medium) !important; /* Markierung für ausgewählten Button */
       }
     }
   }

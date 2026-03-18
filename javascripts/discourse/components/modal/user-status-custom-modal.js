@@ -47,6 +47,8 @@ export default class UserStatusCustomModal extends Component {
   timeShortcutsArray = this.buildTimeShortcuts();
   _itsatrap = new ItsATrap();
   
+  @tracked selectedShortcutId = null;
+
   constructor() {
     super(...arguments);
     this.loadHistory();
@@ -62,7 +64,13 @@ export default class UserStatusCustomModal extends Component {
   }
 
   get saveDisabled() {
-    return !this.status.emoji || !this.status.description;
+    if (this.status.emoji && this.status.description) {
+      return false;
+    }
+    if (this.pauseNotifications) {
+      return false;
+    }
+    return true;
   }
 
   get showDeleteButton() {
@@ -70,6 +78,10 @@ export default class UserStatusCustomModal extends Component {
   }
 
   get prefilledDateTime() {
+    // Verhindert, dass der Custom Picker aufklappt, wenn wir einen Inline-Button klicken
+    if (this.selectedShortcutId && this.selectedShortcutId !== "custom") {
+      return null;
+    }
     return this.status.endsAt;
   }
 
@@ -114,11 +126,15 @@ export default class UserStatusCustomModal extends Component {
       { id: "later_today", name: "Im Laufe des Tages", time: shortcuts.laterToday().time },
       { id: "tomorrow", name: "Morgen", time: shortcuts.tomorrow().time },
       { id: "none", name: "Nie", time: null }
-    ];
+    ].map(s => ({
+      ...s,
+      activeClass: this.selectedShortcutId === s.id ? 'active' : ''
+    }));
   }
 
   @action
-  setInlineTime(time) {
+  setInlineTime(shortcutId, time) {
+    this.selectedShortcutId = shortcutId;
     this.status.endsAt = time;
   }
 
@@ -163,6 +179,7 @@ export default class UserStatusCustomModal extends Component {
 
   @action
   onTimeSelected(_, time) {
+    this.selectedShortcutId = "custom";
     this.status.endsAt = time;
   }
 
