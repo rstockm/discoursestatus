@@ -1,31 +1,8 @@
 /* Profilbild-Overlay und Platzhalter-Icon */
 
 #current-user, .d-header .current-user, .user-menu-toggle, .d-header .user-menu-toggle {
-  position: relative;
-  overflow: visible !important; // Verhindert, dass das + Symbol abgeschnitten wird
-
-  // Platzhalter-Icon (wird jetzt per JavaScript injectet, um robuster zu sein)
-  .status-placeholder-custom {
-    position: absolute;
-    bottom: -4px;
-    right: -4px;
-    background-color: #e0e0e0; /* farblich ausgegraut */
-    color: darkgreen; /* dunkelgrünes + */
-    border-radius: 50%;
-    width: 18px;
-    height: 18px;
-    font-size: 16px;
-    line-height: 16px;
-    font-weight: bold;
-    text-align: center;
-    border: 1px solid #b0b0b0;
-    pointer-events: none; // Klicks gehen durch auf den Button
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-  }
+  position: relative !important;
+  overflow: visible !important; 
 
   // Cursor ändert sich zur Anzeige, dass die rechte Seite anders reagiert
   &:hover::before {
@@ -38,5 +15,37 @@
     cursor: alias;
     z-index: 101;
   }
+}
+
+/* Globaler Selector für den Platzhalter, damit die Styles auf jeden Fall greifen */
+.status-placeholder-custom {
+  position: absolute !important;
+  bottom: 0px !important; // Nicht zu weit raus, sonst sprengt es evtl. Boxen
+  right: 0px !important;
+  background-color: #e0e0e0 !important; /* farblich ausgegraut */
+  color: darkgreen !important; /* dunkelgrünes + */
+  border-radius: 50% !important;
+  width: 18px !important;
+  height: 18px !important;
+  font-size: 16px !important;
+  line-height: 16px !important;
+  font-weight: bold !important;
+  text-align: center !important;
+  border: 1px solid #b0b0b0 !important;
+  
+  /* WICHTIG: Klickbar machen! */
+  pointer-events: auto !important; 
+  cursor: pointer !important;
+  z-index: 9999 !important;
+  
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;
+  
+  /* Fallback, falls der Button breiter ist als das Avatar:
+     Versuche es am Bild auszurichten, wenn möglich, aber Discourse Header Icons 
+     sind meist 32x32px zentriert in einem 40x40px Button. */
+  transform: translate(25%, 25%) !important; 
 }
 

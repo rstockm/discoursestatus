@@ -27,7 +27,17 @@ export default {
               placeholder = document.createElement('div');
               placeholder.className = 'status-placeholder-custom';
               placeholder.innerHTML = '+';
-              btn.appendChild(placeholder);
+              
+              // Hänge es direkt an den Avatar-Container an, damit Positionierung perfekt stimmt
+              const avatar = btn.querySelector('img.avatar');
+              if (avatar && avatar.parentElement) {
+                avatar.parentElement.style.position = 'relative';
+                // Verhindern, dass overflow: hidden des Parents das Icon abschneidet
+                avatar.parentElement.style.overflow = 'visible';
+                avatar.parentElement.appendChild(placeholder);
+              } else {
+                btn.appendChild(placeholder);
+              }
             }
           } else {
             // Wenn Status vorhanden, entferne Platzhalter
@@ -52,27 +62,35 @@ export default {
       document.addEventListener('click', (e) => {
         // Die ID kann #current-user oder in neueren Versionen .current-user, .user-menu-toggle sein
         const currentUserButton = e.target.closest('#current-user') || e.target.closest('.current-user') || e.target.closest('.user-menu-toggle');
+        const clickedPlaceholder = e.target.closest('.status-placeholder-custom');
         
-        if (currentUserButton) {
-          // Nur im Header auslösen
-          if (!currentUserButton.closest('.d-header')) return;
+        let shouldOpenModal = false;
 
+        // Prüfen ob das Plus-Symbol direkt geklickt wurde
+        if (clickedPlaceholder && clickedPlaceholder.closest('.d-header')) {
+          shouldOpenModal = true;
+        } 
+        // Oder ob die rechte Hälfte des Buttons geklickt wurde
+        else if (currentUserButton && currentUserButton.closest('.d-header')) {
           const rect = currentUserButton.getBoundingClientRect();
           const clickX = e.clientX - rect.left;
-          
           if (clickX > rect.width / 2) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const modalService = api.container.lookup('service:modal');
-            
-            // In neueren Discourse-Versionen (Glimmer) die Klasse suchen, andernfalls String-Name
-            const modalFactory = api.container.factoryFor('component:modal/user-status-custom-modal');
-            const customModalComponent = modalFactory ? modalFactory.class : 'user-status-custom-modal';
-            
-            if (modalService && customModalComponent) {
-              modalService.show(customModalComponent, { model: {} });
-            }
+            shouldOpenModal = true;
+          }
+        }
+        
+        if (shouldOpenModal) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const modalService = api.container.lookup('service:modal');
+          
+          // In neueren Discourse-Versionen (Glimmer) die Klasse suchen, andernfalls String-Name
+          const modalFactory = api.container.factoryFor('component:modal/user-status-custom-modal');
+          const customModalComponent = modalFactory ? modalFactory.class : 'user-status-custom-modal';
+          
+          if (modalService && customModalComponent) {
+            modalService.show(customModalComponent, { model: {} });
           }
         }
       }, true);
