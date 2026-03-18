@@ -1,33 +1,37 @@
 import { withPluginApi } from "discourse/lib/plugin-api";
-import { bind } from "discourse-common/utils/decorators";
 
 export default {
   name: "user-status-avatar-overlay",
   
   initialize() {
     withPluginApi("1.13.0", (api) => {
-      // Füge Event-Listener zum Document hinzu, um Klicks auf die rechte Avatar-Hälfte abzufangen
       document.addEventListener('click', (e) => {
-        const currentUserButton = e.target.closest('#current-user');
+        // Die ID kann #current-user oder in neueren Versionen .current-user, .user-menu-toggle sein
+        const currentUserButton = e.target.closest('#current-user') || e.target.closest('.current-user') || e.target.closest('.user-menu-toggle');
         
         if (currentUserButton) {
+          // Nur im Header auslösen
+          if (!currentUserButton.closest('.d-header')) return;
+
           const rect = currentUserButton.getBoundingClientRect();
           const clickX = e.clientX - rect.left;
           
-          // Wenn Klick in der rechten Hälfte (mehr als 50% der Breite)
           if (clickX > rect.width / 2) {
             e.preventDefault();
             e.stopPropagation();
             
-            // Öffne unser benutzerdefiniertes Modal anstelle des Standard-Dropdowns
             const modalService = api.container.lookup('service:modal');
-            modalService.show(
-              api.container.lookup('component:user-status-custom-modal').constructor,
-              { model: {} }
-            );
+            
+            // In neueren Discourse-Versionen (Glimmer) die Klasse suchen, andernfalls String-Name
+            const modalFactory = api.container.factoryFor('component:modal/user-status-custom-modal');
+            const customModalComponent = modalFactory ? modalFactory.class : 'user-status-custom-modal';
+            
+            if (modalService && customModalComponent) {
+              modalService.show(customModalComponent, { model: {} });
+            }
           }
         }
-      }, true); // Use capture phase to intercept before Discourse core
+      }, true);
     });
   }
 };

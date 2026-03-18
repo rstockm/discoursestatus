@@ -1,6 +1,6 @@
 /* Profilbild-Overlay und Platzhalter-Icon */
 
-#current-user {
+#current-user, .d-header .current-user, .user-menu-toggle {
   position: relative;
 
   // Der Standard-Avatar
@@ -11,7 +11,7 @@
   // Platzhalter-Icon im unteren rechten Viertel, wenn kein Status gesetzt ist.
   // Discourse setzt typischerweise ein div.user-status auf den Avatar, wenn ein Status existiert.
   // Wenn dieses div fehlt, zeigen wir unseren Platzhalter.
-  &:not(:has(.user-status))::after {
+  &:not(:has(.user-status)):not(:has(.user-status-message))::after {
     content: "+";
     position: absolute;
     bottom: -2px;
@@ -41,3 +41,4 @@
     z-index: 11;
   }
 }
+
