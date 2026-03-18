@@ -49,6 +49,11 @@
   pointer-events: auto !important; 
   cursor: pointer !important;
   z-index: 9999 !important;
+  transition: background-color 0.2s !important;
+}
+
+.status-placeholder-custom:hover {
+  background-color: #c0c0c0 !important; /* Etwas dunkler beim Hovern */
 }
 
 /* Verhindern, dass der Platzhalter vom Hover-Rechteck des Headers überschrieben wird */
@@ -56,6 +61,10 @@
 .d-header .panel .btn-flat:focus .status-placeholder-custom {
   background-color: #e0e0e0 !important;
   color: darkgreen !important;
+}
+
+.d-header .panel .btn-flat:hover .status-placeholder-custom:hover {
+  background-color: #c0c0c0 !important;
 }
 
 /* Modal CSS */
@@ -76,7 +85,7 @@
 
   .preset-grid, .history-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: 8px;
 
     .btn {
@@ -97,8 +106,37 @@
   // Mobile optimization
   @media screen and (max-width: 500px) {
     .preset-grid, .history-grid {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(1, 1fr) !important; // Einspaltig auf sehr kleinen Displays
     }
+  }
+
+  /* Buttons anpassen */
+  .d-modal__footer, .modal-footer {
+    .btn-primary {
+      background-color: #007175 !important;
+      color: #ffffff !important;
+      border-color: #007175 !important;
+    }
+    .d-modal-cancel, .btn-default:not(.preset-btn) {
+      color: #000000 !important;
+    }
+  }
+}
+
+/* Time Shortcut Picker anpassen (Dropdown) */
+.time-shortcut-picker {
+  /* Verstecke die exakte Uhrzeit im Feld und Dropdown */
+  .time {
+    display: none !important;
+  }
+
+  /* Setze das "Datum und Uhrzeit auswählen" (Custom) nach ganz oben */
+  .select-kit-collection {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .select-kit-row[data-value="custom"] {
+    order: -1 !important; /* Nach oben verschieben */
   }
 }
 

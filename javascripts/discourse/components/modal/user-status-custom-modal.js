@@ -15,7 +15,7 @@ const PRESET_STATUSES = [
   { emoji: "spiral_calendar", name: "Meeting" },
   { emoji: "headphones", name: "Fokus" },
   { emoji: "x", name: "Abwesend" },
-  { emoji: "books", name: "Im Publikumsbereich" }
+  { emoji: "books", name: "Publikum" }
 ];
 
 const STORAGE_KEY = "user_status_history";
@@ -75,7 +75,7 @@ export default class UserStatusCustomModal extends Component {
 
   get customTimeShortcutLabels() {
     return {
-      [TIME_SHORTCUT_TYPES.NONE]: "time_shortcut.never",
+      [TIME_SHORTCUT_TYPES.NONE]: "Nie",
     };
   }
 
@@ -86,7 +86,12 @@ export default class UserStatusCustomModal extends Component {
   buildTimeShortcuts() {
     if (!this.currentUser) return [];
     const shortcuts = timeShortcuts(this.currentUser.user_option.timezone);
-    return [shortcuts.oneHour(), shortcuts.twoHours(), shortcuts.tomorrow()];
+    return [
+      shortcuts.oneHour(), 
+      shortcuts.twoHours(), 
+      shortcuts.laterToday(), 
+      shortcuts.tomorrow()
+    ];
   }
 
   loadHistory() {
