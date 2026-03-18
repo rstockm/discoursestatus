@@ -64,13 +64,13 @@ export default class UserStatusCustomModal extends Component {
   }
 
   get saveDisabled() {
-    if (this.status.emoji && this.status.description) {
-      return false;
+    // Discourse erlaubt das Speichern, solange ENTWEDER ein Emoji ODER ein Text vorhanden ist.
+    // Ein Status darf nicht komplett leer sein (außer man löscht ihn, was der Mülleimer-Button macht).
+    // Da das Standard-Emoji "speech_balloon" ist, ist diese Bedingung fast immer erfüllt.
+    if (!this.status.emoji && !this.status.description) {
+      return true;
     }
-    if (this.pauseNotifications) {
-      return false;
-    }
-    return true;
+    return false;
   }
 
   get showDeleteButton() {
@@ -178,7 +178,7 @@ export default class UserStatusCustomModal extends Component {
   }
 
   @action
-  onTimeSelected(_, time) {
+  onTimeSelected(time) {
     this.selectedShortcutId = "custom";
     this.status.endsAt = time;
   }
