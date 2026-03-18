@@ -205,11 +205,30 @@ export default class UserStatusCustomModal extends Component {
 
     this.saveToHistory(this.status.emoji, this.status.description);
 
+    // Format `ends_at` as ISO string if it's a valid date/time, otherwise use exactly what was passed.
+    // Discourse time shortcuts (like moment.js objects) might need formatting, or they might be raw strings.
+    let formattedEndsAt = null;
+    if (this.status.endsAt) {
+      if (typeof this.status.endsAt === "string") {
+        formattedEndsAt = this.status.endsAt;
+      } else if (typeof this.status.endsAt.toISOString === "function") {
+        formattedEndsAt = this.status.endsAt.toISOString();
+      } else if (this.status.endsAt.format) { // Moment.js handling which Discourse often uses
+        formattedEndsAt = this.status.endsAt.format();
+      } else {
+        formattedEndsAt = new Date(this.status.endsAt).toISOString();
+      }
+    }
+
     const newStatus = {
       description: this.status.description,
       emoji: this.status.emoji,
-      ends_at: this.status.endsAt ? this.status.endsAt.toISOString() : null,
+      ends_at: formattedEndsAt,
     };
+
+    // #region agent log
+    fetch('http://127.0.0.1:7931/ingest/89deca5e-9e6e-457a-abe7-f4a6e39bf6b5',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'bdd1ba'},body:JSON.stringify({sessionId:'bdd1ba',location:'user-status-custom-modal.js:223',message:'Saving status payload',data:{newStatus, originalEndsAt: this.status.endsAt},timestamp:Date.now(),runId:'run2',hypothesisId:'1'})}).catch(()=>{});
+    // #endregion
 
     try {
       if (this.userStatus) {
@@ -220,6 +239,9 @@ export default class UserStatusCustomModal extends Component {
       }
       this.args.closeModal();
     } catch (e) {
+      // #region agent log
+      fetch('http://127.0.0.1:7931/ingest/89deca5e-9e6e-457a-abe7-f4a6e39bf6b5',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'bdd1ba'},body:JSON.stringify({sessionId:'bdd1ba',location:'user-status-custom-modal.js:235',message:'Error saving status',data:{error:e},timestamp:Date.now(),runId:'run2',hypothesisId:'1'})}).catch(()=>{});
+      // #endregion
       if (typeof e === "string") this.dialog.alert(e);
       else console.error(e);
     }
