@@ -27,22 +27,38 @@ export default {
               placeholder = document.createElement('div');
               placeholder.className = 'status-placeholder-custom';
               placeholder.innerHTML = '+';
+              placeholder.title = 'Status festlegen'; // Verhindert, dass der "Benachrichtigungen" Tooltip beim Hovern über das + erscheint
               
-              // Hänge es direkt an den Avatar-Container an, damit Positionierung perfekt stimmt
               const avatar = btn.querySelector('img.avatar');
               if (avatar) {
-                // Den Wrapper des Avatars finden
-                const avatarWrapper = avatar.closest('.avatar-wrapper') || avatar.parentElement;
+                const parent = avatar.parentElement;
+                parent.style.position = 'relative';
+                parent.style.overflow = 'visible';
+                parent.appendChild(placeholder);
                 
-                if (avatarWrapper) {
-                  avatarWrapper.style.position = 'relative';
-                  avatarWrapper.style.overflow = 'visible';
-                  avatarWrapper.appendChild(placeholder);
-                } else {
-                  btn.appendChild(placeholder);
-                }
+                // Exakte Positionierung per JavaScript erzwingen, um CSS-Konflikte des Themes zu umgehen
+                const updatePos = () => {
+                  if (!avatar.offsetWidth) return;
+                  // Setze das Icon an die exakte Pixelposition relativ zum Bild
+                  placeholder.style.left = (avatar.offsetLeft + avatar.offsetWidth - 14) + 'px';
+                  placeholder.style.top = (avatar.offsetTop + avatar.offsetHeight - 14) + 'px';
+                  // Bottom/Right überschreiben, da wir Left/Top nutzen
+                  placeholder.style.bottom = 'auto';
+                  placeholder.style.right = 'auto';
+                };
+                
+                updatePos();
+                setTimeout(updatePos, 100);
+                setTimeout(updatePos, 500); // Fallback für langsames Laden des Bildes
               } else {
                 btn.appendChild(placeholder);
+              }
+            } else {
+              // Update position in case of resize/redraw
+              const avatar = btn.querySelector('img.avatar');
+              if (avatar) {
+                 placeholder.style.left = (avatar.offsetLeft + avatar.offsetWidth - 14) + 'px';
+                 placeholder.style.top = (avatar.offsetTop + avatar.offsetHeight - 14) + 'px';
               }
             }
           } else {

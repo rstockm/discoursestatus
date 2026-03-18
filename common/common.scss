@@ -24,8 +24,7 @@
  */
 .status-placeholder-custom {
   position: absolute !important;
-  bottom: -4px !important; // Exakt wie der native Discourse-Status nach außen gezogen
-  right: -4px !important; // Exakt wie der native Discourse-Status nach außen gezogen
+  /* JS setzt top/left zur exakten Positionierung */
   
   /* Form und Aussehen wie der Original-Status-Kreis */
   width: 20px !important;
