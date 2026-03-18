@@ -156,12 +156,15 @@
     
     .select-kit-header {
       background-color: var(--primary-low) !important;
-      border: 1px solid transparent !important;
+      border: 1px solid var(--primary-low-mid) !important;
       justify-content: center !important;
       font-weight: normal !important;
+      padding: 8px 12px !important;
+      border-radius: 4px;
       
       &:hover {
         background-color: var(--primary-low-mid) !important;
+        border-color: var(--primary-medium) !important;
       }
     }
   }
