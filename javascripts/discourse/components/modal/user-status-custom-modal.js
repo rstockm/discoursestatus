@@ -80,7 +80,18 @@ export default class UserStatusCustomModal extends Component {
   }
 
   get hiddenTimeShortcutOptions() {
-    return [TIME_SHORTCUT_TYPES.LAST_CUSTOM];
+    return [
+      TIME_SHORTCUT_TYPES.NONE,
+      TIME_SHORTCUT_TYPES.ONE_HOUR,
+      TIME_SHORTCUT_TYPES.TWO_HOURS,
+      TIME_SHORTCUT_TYPES.LATER_TODAY,
+      TIME_SHORTCUT_TYPES.TOMORROW,
+      TIME_SHORTCUT_TYPES.THIS_WEEKEND,
+      TIME_SHORTCUT_TYPES.NEXT_WEEK,
+      TIME_SHORTCUT_TYPES.NEXT_MONTH,
+      TIME_SHORTCUT_TYPES.TWO_WEEKS,
+      TIME_SHORTCUT_TYPES.LAST_CUSTOM
+    ];
   }
 
   buildTimeShortcuts() {
@@ -92,6 +103,23 @@ export default class UserStatusCustomModal extends Component {
       shortcuts.laterToday(), 
       shortcuts.tomorrow()
     ];
+  }
+
+  get inlineTimeShortcuts() {
+    if (!this.currentUser) return [];
+    const shortcuts = timeShortcuts(this.currentUser.user_option.timezone);
+    return [
+      { id: "one_hour", name: "In einer Stunde", time: shortcuts.oneHour().time },
+      { id: "two_hours", name: "In zwei Stunden", time: shortcuts.twoHours().time },
+      { id: "later_today", name: "Im Laufe des Tages", time: shortcuts.laterToday().time },
+      { id: "tomorrow", name: "Morgen", time: shortcuts.tomorrow().time },
+      { id: "none", name: "Nie", time: null }
+    ];
+  }
+
+  @action
+  setInlineTime(time) {
+    this.status.endsAt = time;
   }
 
   loadHistory() {

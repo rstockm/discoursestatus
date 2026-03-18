@@ -85,7 +85,8 @@
 
   .preset-grid, .history-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr) !important;
+    /* 4 Spalten Layout für Desktop, ggf. anpassen auf Mobile */
+    grid-template-columns: repeat(4, 1fr) !important;
     gap: 8px;
 
     .btn {
@@ -93,6 +94,12 @@
       text-align: left;
       padding: 8px 12px;
       width: 100%;
+      background-color: var(--primary-low) !important; /* Grau hinterlegt wie gewünscht */
+      border: 1px solid transparent !important;
+      
+      &:hover {
+        background-color: var(--primary-low-mid) !important;
+      }
       
       .preset-name {
         margin-left: 8px;
@@ -103,10 +110,59 @@
     }
   }
 
+  // Für Zeilen, in denen nur 2 Elemente sind (z.B. am Ende)
+  // Das erledigt das Grid automatisch (sie füllen nur ihren jeweiligen 1/4 Slot)
+  // Wenn wir aber wollen, dass die restlichen explizit nicht auf volle Breite stretchen,
+  // dann macht das CSS-Grid (1fr) genau das richtige: sie werden so breit wie die 4er Spalten.
+
   // Mobile optimization
   @media screen and (max-width: 500px) {
     .preset-grid, .history-grid {
-      grid-template-columns: repeat(1, 1fr) !important; // Einspaltig auf sehr kleinen Displays
+      grid-template-columns: repeat(2, 1fr) !important; // Zweispaltig auf sehr kleinen Displays
+    }
+  }
+
+  /* Inline Time Shortcuts (Status entfernen Buttons) */
+  .inline-time-shortcuts {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px;
+    margin-top: 8px;
+
+    .btn {
+      justify-content: center;
+      text-align: center;
+      padding: 8px 12px;
+      width: 100%;
+      background-color: var(--primary-low) !important; /* Grau hinterlegt */
+      border: 1px solid transparent !important;
+      color: var(--primary) !important;
+      font-weight: normal !important;
+      
+      &:hover {
+        background-color: var(--primary-low-mid) !important;
+      }
+    }
+  }
+
+  /* Time Shortcut Picker anpassen (nur noch für Custom Datum genutzt) */
+  .custom-time-picker-wrapper {
+    margin-bottom: 8px;
+    width: 100%;
+    
+    .select-kit {
+      width: 100% !important;
+    }
+    
+    .select-kit-header {
+      background-color: var(--primary-low) !important;
+      border: 1px solid transparent !important;
+      justify-content: center !important;
+      font-weight: normal !important;
+      
+      &:hover {
+        background-color: var(--primary-low-mid) !important;
+      }
     }
   }
 
@@ -117,26 +173,21 @@
       color: #ffffff !important;
       border-color: #007175 !important;
     }
-    .d-modal-cancel, .btn-default:not(.preset-btn) {
+    .d-modal-cancel, .btn-default:not(.preset-btn):not(.time-shortcut-btn) {
       color: #000000 !important;
     }
   }
 }
 
-/* Time Shortcut Picker anpassen (Dropdown) */
+/* Verstecke die Dropdown-Inhalte, die wir nicht mehr brauchen, falls das Dropdown geöffnet wird */
 .time-shortcut-picker {
-  /* Verstecke die exakte Uhrzeit im Feld und Dropdown */
-  .time {
-    display: none !important;
-  }
-
-  /* Setze das "Datum und Uhrzeit auswählen" (Custom) nach ganz oben */
-  .select-kit-collection {
-    display: flex !important;
-    flex-direction: column !important;
+  .select-kit-row {
+    .time, .d-icon {
+      display: none !important;
+    }
   }
   .select-kit-row[data-value="custom"] {
-    order: -1 !important; /* Nach oben verschieben */
+    order: -1 !important;
   }
 }
 

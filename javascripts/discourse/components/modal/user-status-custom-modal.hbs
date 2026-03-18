@@ -49,15 +49,29 @@
             {{i18n "user_status.remove_status"}}
           </label>
 
-          {{!-- Discourse Core Komponente für Datum/Zeit --}}
-          <TimeShortcutPicker
-            @timeShortcuts={{this.timeShortcutsArray}}
-            @hiddenOptions={{this.hiddenTimeShortcutOptions}}
-            @customLabels={{this.customTimeShortcutLabels}}
-            @prefilledDatetime={{this.prefilledDateTime}}
-            @onTimeSelected={{this.onTimeSelected}}
-            @_itsatrap={{this._itsatrap}}
-          />
+          {{!-- Discourse Core Komponente für Datum/Zeit (nur noch für Custom Datum genutzt) --}}
+          <div class="custom-time-picker-wrapper">
+            <TimeShortcutPicker
+              @timeShortcuts={{this.timeShortcutsArray}}
+              @hiddenOptions={{this.hiddenTimeShortcutOptions}}
+              @customLabels={{this.customTimeShortcutLabels}}
+              @prefilledDatetime={{this.prefilledDateTime}}
+              @onTimeSelected={{this.onTimeSelected}}
+              @_itsatrap={{this._itsatrap}}
+            />
+          </div>
+
+          <div class="inline-time-shortcuts">
+            {{#each this.inlineTimeShortcuts as |shortcut|}}
+              <DButton 
+                class="btn-default time-shortcut-btn" 
+                @action={{fn this.setInlineTime shortcut.time}}
+                @label={{shortcut.name}}
+              >
+                {{shortcut.name}}
+              </DButton>
+            {{/each}}
+          </div>
         </div>
       </div>
     </div>
