@@ -1,0 +1,178 @@
+/* Profilbild-Overlay und Platzhalter-Icon */
+
+#current-user, .d-header .current-user, .user-menu-toggle, .d-header .user-menu-toggle {
+  position: relative !important;
+  overflow: visible !important; 
+
+  // Cursor ändert sich zur Anzeige, dass die rechte Seite anders reagiert
+  &:hover::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    cursor: alias;
+    z-index: 101;
+  }
+}
+
+/* 
+ * WICHTIG: Das Design des Platzhalters orientiert sich exakt an den CSS-Klassen, 
+ * die Discourse nativ für den echten Status (.user-status-background, .user-status-message) verwendet!
+ * Wir nutzen abolute Positionierung relativ zum engsten .avatar-wrapper oder Profilbild.
+ */
+.status-placeholder-custom {
+  position: absolute !important;
+  bottom: -4px !important; // Exakt wie der native Discourse-Status nach außen gezogen
+  right: -4px !important; // Exakt wie der native Discourse-Status nach außen gezogen
+  
+  /* Form und Aussehen wie der Original-Status-Kreis */
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 50% !important;
+  background-color: #e0e0e0 !important; /* farblich ausgegraut nach Vorgabe */
+  color: darkgreen !important; /* dunkelgrünes + nach Vorgabe */
+  
+  /* Text-Styling für das "+" */
+  font-size: 16px !important;
+  line-height: 1 !important;
+  font-weight: bold !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  
+  /* Rand und Schatten analog zum echten Status (um sich vom Profilbild abzuheben) */
+  border: 2px solid var(--secondary) !important; // Nutzt die Hintergrundfarbe der Seite als Rand
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+  
+  /* Klickbarkeit und Hover-Status */
+  pointer-events: auto !important; 
+  cursor: pointer !important;
+  z-index: 9999 !important;
+}
+
+/* Verhindern, dass der Platzhalter vom Hover-Rechteck des Headers überschrieben wird */
+.d-header .panel .btn-flat:hover .status-placeholder-custom,
+.d-header .panel .btn-flat:focus .status-placeholder-custom {
+  background-color: #e0e0e0 !important;
+  color: darkgreen !important;
+}
+
+/* Modal CSS */
+.user-status-custom-modal {
+  .user-status-modal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 10px 0;
+  }
+
+  h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    color: var(--primary);
+  }
+
+  .preset-grid, .history-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
+
+    .btn {
+      justify-content: flex-start;
+      text-align: left;
+      padding: 8px 12px;
+      width: 100%;
+      
+      .preset-name {
+        margin-left: 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
+  // Mobile optimization
+  @media screen and (max-width: 500px) {
+    .preset-grid, .history-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+}
+
+/* Team Status CSS */
+.team-status-header-icon {
+  position: relative;
+  
+  .menu-panel {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 300px;
+    z-index: 1000;
+    padding: 0;
+    max-height: 400px;
+    overflow-y: auto;
+    background-color: var(--secondary);
+    border: 1px solid var(--primary-low);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  }
+
+  .team-status-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+      padding: 10px;
+      border-bottom: 1px solid var(--primary-low);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    .team-member-item {
+      .member-avatar {
+        position: relative;
+        flex-shrink: 0;
+        
+        img {
+          border-radius: 50%;
+        }
+      }
+
+      .member-info {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+
+        .member-username {
+          font-weight: bold;
+          color: var(--primary);
+          text-decoration: none;
+        }
+
+        .member-status {
+          font-size: 0.9em;
+          color: var(--primary-medium);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+    }
+
+    .loading-state, .empty-state {
+      justify-content: center;
+      color: var(--primary-medium);
+      font-style: italic;
+    }
+  }
+}
