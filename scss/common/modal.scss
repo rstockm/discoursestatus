@@ -33,43 +33,10 @@
     }
   }
 
-  .custom-inputs {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-
-    .emoji-input {
-      width: 80px;
-      flex-shrink: 0;
-    }
-
-    .text-input {
-      flex-grow: 1;
-      width: auto;
-    }
-  }
-
-  .status-actions {
-    margin-top: 10px;
-    border-top: 1px solid var(--primary-low);
-    padding-top: 15px;
-    display: flex;
-    justify-content: flex-end;
-  }
-
   // Mobile optimization
   @media screen and (max-width: 500px) {
     .preset-grid, .history-grid {
       grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .custom-inputs {
-      flex-direction: column;
-      align-items: stretch;
-      
-      .emoji-input {
-        width: 100%;
-      }
     }
   }
 }

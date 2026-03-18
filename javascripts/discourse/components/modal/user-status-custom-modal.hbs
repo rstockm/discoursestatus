@@ -1,45 +1,84 @@
-<DModal @title="Status festlegen" @closeModal={{@closeModal}} class="user-status-custom-modal">
-  <div class="user-status-modal-content">
-    
-    {{#if this.history.length}}
+<DModal @title={{i18n "user_status.set_custom_status"}} @closeModal={{@closeModal}} class="user-status-custom-modal user-status">
+  <:body>
+    <div class="user-status-modal-content">
+      
+      {{#if this.history.length}}
+        <div class="status-section">
+          <h3>Häufig genutzt</h3>
+          <div class="history-grid">
+            {{#each this.history as |hist|}}
+              <DButton 
+                class="btn-default preset-btn" 
+                @action={{fn this.setQuickStatus hist.emoji hist.name}}>
+                {{replace-emoji (concat ":" hist.emoji ":")}} <span class="preset-name"> {{hist.name}}</span>
+              </DButton>
+            {{/each}}
+          </div>
+        </div>
+      {{/if}}
+
       <div class="status-section">
-        <h3>Häufig genutzt</h3>
-        <div class="history-grid">
-          {{#each this.history as |hist|}}
+        <h3>Schnellauswahl</h3>
+        <div class="preset-grid">
+          {{#each this.presets as |preset|}}
             <DButton 
               class="btn-default preset-btn" 
-              @action={{fn this.setStatus hist.emoji hist.name}}>
-              {{replace-emoji (concat ":" hist.emoji ":")}} <span class="preset-name">{{hist.name}}</span>
+              @action={{fn this.setQuickStatus preset.emoji preset.name}}>
+              {{replace-emoji (concat ":" preset.emoji ":")}} <span class="preset-name"> {{preset.name}}</span>
             </DButton>
           {{/each}}
         </div>
       </div>
+
+      <div class="status-section custom-status">
+        <h3>Eigener Status</h3>
+        <div class="control-group">
+          {{!-- Discourse Core Komponente für das Emoji/Text Feld --}}
+          <UserStatusPicker @status={{this.status}} />
+        </div>
+
+        <div class="control-group pause-notifications" style="margin-top: 15px;">
+          <label class="checkbox-label">
+            <Input @type="checkbox" @checked={{this.pauseNotifications}} />
+            {{i18n "user_status.pause_notifications"}}
+          </label>
+        </div>
+
+        <div class="control-group control-group-remove-status" style="margin-top: 15px;">
+          <label class="control-label">
+            {{i18n "user_status.remove_status"}}
+          </label>
+
+          {{!-- Discourse Core Komponente für Datum/Zeit --}}
+          <TimeShortcutPicker
+            @timeShortcuts={{this.timeShortcutsArray}}
+            @hiddenOptions={{this.hiddenTimeShortcutOptions}}
+            @customLabels={{this.customTimeShortcutLabels}}
+            @prefilledDatetime={{this.prefilledDateTime}}
+            @onTimeSelected={{this.onTimeSelected}}
+            @_itsatrap={{this._itsatrap}}
+          />
+        </div>
+      </div>
+    </div>
+  </:body>
+
+  <:footer>
+    <DButton
+      @label="user_status.save"
+      @disabled={{this.saveDisabled}}
+      @action={{this.saveStatus}}
+      class="btn-primary"
+    />
+
+    <DModalCancel @close={{@closeModal}} />
+
+    {{#if this.showDeleteButton}}
+      <DButton
+        @icon="trash-can"
+        @action={{this.deleteStatus}}
+        class="delete-status btn-danger"
+      />
     {{/if}}
-
-    <div class="status-section">
-      <h3>Schnellauswahl</h3>
-      <div class="preset-grid">
-        {{#each this.presets as |preset|}}
-          <DButton 
-            class="btn-default preset-btn" 
-            @action={{fn this.setStatus preset.emoji preset.name}}>
-            {{replace-emoji (concat ":" preset.emoji ":")}} <span class="preset-name">{{preset.name}}</span>
-          </DButton>
-        {{/each}}
-      </div>
-    </div>
-
-    <div class="status-section custom-status">
-      <h3>Eigener Status</h3>
-      <div class="custom-inputs">
-        <Input @type="text" @value={{this.customEmoji}} class="emoji-input" placeholder="Emoji (ohne ::)" />
-        <Input @type="text" @value={{this.customText}} maxlength="30" placeholder="Eigener Status (max. 30 Zeichen)" class="text-input" />
-        <DButton @action={{this.saveCustomStatus}} @label="theme_translations.save" class="btn-primary" />
-      </div>
-    </div>
-
-    <div class="status-actions">
-      <DButton @action={{this.clearStatus}} class="btn-danger" @icon="trash-alt" label="Status löschen" />
-    </div>
-  </div>
+  </:footer>
 </DModal>

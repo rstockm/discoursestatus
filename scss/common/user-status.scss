@@ -2,31 +2,29 @@
 
 #current-user, .d-header .current-user, .user-menu-toggle {
   position: relative;
-
-  // Der Standard-Avatar
-  .avatar {
-    position: relative;
-  }
+  overflow: visible; // Verhindert, dass das + Symbol abgeschnitten wird
 
   // Platzhalter-Icon im unteren rechten Viertel, wenn kein Status gesetzt ist.
-  // Discourse setzt typischerweise ein div.user-status auf den Avatar, wenn ein Status existiert.
-  // Wenn dieses div fehlt, zeigen wir unseren Platzhalter.
-  &:not(:has(.user-status)):not(:has(.user-status-message))::after {
-    content: "+";
-    position: absolute;
-    bottom: -2px;
-    right: -2px;
-    background-color: var(--primary-low);
-    color: var(--primary);
-    border-radius: 50%;
-    width: 14px;
-    height: 14px;
-    font-size: 12px;
-    line-height: 14px;
-    text-align: center;
-    border: 1px solid var(--secondary);
-    pointer-events: none; // Klicks gehen durch auf den Button
-    z-index: 10;
+  // Glimmer Header nutzt meist .user-status-background oder .user-status
+  &:not(:has(.user-status)):not(:has(.user-status-background)):not(:has(.user-status-message)) {
+    &::after {
+      content: "+";
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      background-color: var(--primary-low);
+      color: var(--primary);
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      font-size: 14px;
+      line-height: 14px;
+      font-weight: bold;
+      text-align: center;
+      border: 1px solid var(--secondary);
+      pointer-events: none; // Klicks gehen durch auf den Button
+      z-index: 100;
+    }
   }
 
   // Cursor ändert sich zur Anzeige, dass die rechte Seite anders reagiert
@@ -38,7 +36,7 @@
     width: 50%;
     height: 100%;
     cursor: alias;
-    z-index: 11;
+    z-index: 101;
   }
 }
 

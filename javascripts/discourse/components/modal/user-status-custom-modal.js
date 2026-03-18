@@ -2,6 +2,8 @@ import Component from "@glimmer/component";
 import { action } from "@ember/object";
 import { inject as service } from "@ember/service";
 import { tracked } from "@glimmer/tracking";
+import { timeShortcuts, TIME_SHORTCUT_TYPES } from "discourse/lib/time-shortcut";
+import ItsATrap from "@discourse/itsatrap";
 
 const PRESET_STATUSES = [
   { emoji: "house_with_garden", name: "Homeoffice" },
@@ -18,22 +20,73 @@ const PRESET_STATUSES = [
 
 const STORAGE_KEY = "user_status_history";
 
+class TrackedStatus {
+  @tracked emoji = "speech_balloon";
+  @tracked description = "";
+  @tracked endsAt = null;
+
+  constructor(initial = {}) {
+    if (initial) {
+      this.emoji = initial.emoji || "speech_balloon";
+      this.description = initial.description || "";
+      this.endsAt = initial.ends_at ? new Date(initial.ends_at) : null;
+    }
+  }
+}
+
 export default class UserStatusCustomModal extends Component {
   @service siteSettings;
   @service currentUser;
+  @service userStatus;
   @service dialog;
 
-  @tracked customEmoji = "speech_balloon";
-  @tracked customText = "";
+  @tracked status = new TrackedStatus(this.currentUser?.status);
+  @tracked pauseNotifications = false;
   @tracked history = [];
+  
+  timeShortcutsArray = this.buildTimeShortcuts();
+  _itsatrap = new ItsATrap();
   
   constructor() {
     super(...arguments);
     this.loadHistory();
   }
+
+  willDestroy() {
+    super.willDestroy(...arguments);
+    this._itsatrap.destroy();
+  }
   
   get presets() {
     return PRESET_STATUSES;
+  }
+
+  get saveDisabled() {
+    return !this.status.emoji || !this.status.description;
+  }
+
+  get showDeleteButton() {
+    return !!this.currentUser?.status;
+  }
+
+  get prefilledDateTime() {
+    return this.status.endsAt;
+  }
+
+  get customTimeShortcutLabels() {
+    return {
+      [TIME_SHORTCUT_TYPES.NONE]: "time_shortcut.never",
+    };
+  }
+
+  get hiddenTimeShortcutOptions() {
+    return [TIME_SHORTCUT_TYPES.LAST_CUSTOM];
+  }
+
+  buildTimeShortcuts() {
+    if (!this.currentUser) return [];
+    const shortcuts = timeShortcuts(this.currentUser.user_option.timezone);
+    return [shortcuts.oneHour(), shortcuts.twoHours(), shortcuts.tomorrow()];
   }
 
   loadHistory() {
@@ -41,7 +94,6 @@ export default class UserStatusCustomModal extends Component {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         let parsed = JSON.parse(stored);
-        // Sort by count descending and take top 3
         parsed.sort((a, b) => b.count - a.count);
         this.history = parsed.slice(0, 3);
       }
@@ -52,7 +104,6 @@ export default class UserStatusCustomModal extends Component {
 
   saveToHistory(emoji, description) {
     if (!description) return;
-    
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       let parsed = stored ? JSON.parse(stored) : [];
@@ -71,40 +122,56 @@ export default class UserStatusCustomModal extends Component {
   }
 
   @action
-  setStatus(emoji, description) {
-    if (!this.currentUser) return;
-    
-    this.saveToHistory(emoji, description);
-    
-    // Discourse core endpoint is PUT /user-status
-    // Future Feature (Scheduling):
-    // To support "ends_at", add it to this payload.
-    // Example: ends_at: new Date(Date.now() + 3600*1000).toISOString()
-    return this.currentUser.saveStatus({
-      description,
-      emoji
-    }).then(() => {
-      this.args.closeModal();
-      window.location.reload();
-    });
+  setQuickStatus(emoji, description) {
+    this.status.emoji = emoji;
+    this.status.description = description;
+    // Set default end time if not set, optional
   }
 
   @action
-  clearStatus() {
-    if (!this.currentUser) return;
-    
-    return this.currentUser.clearStatus().then(() => {
-      this.args.closeModal();
-      window.location.reload();
-    });
+  onTimeSelected(_, time) {
+    this.status.endsAt = time;
   }
 
   @action
-  saveCustomStatus() {
-    if (this.customText.length > 30) {
+  async deleteStatus() {
+    try {
+      if (this.userStatus) {
+        await this.userStatus.clear();
+      }
+      this.args.closeModal();
+    } catch (e) {
+      if (typeof e === "string") this.dialog.alert(e);
+      else console.error(e);
+    }
+  }
+
+  @action
+  async saveStatus() {
+    if (this.status.description.length > 30) {
       this.dialog.alert("Statusmeldung darf maximal 30 Zeichen lang sein.");
       return;
     }
-    this.setStatus(this.customEmoji, this.customText);
+
+    this.saveToHistory(this.status.emoji, this.status.description);
+
+    const newStatus = {
+      description: this.status.description,
+      emoji: this.status.emoji,
+      ends_at: this.status.endsAt ? this.status.endsAt.toISOString() : null,
+    };
+
+    try {
+      if (this.userStatus) {
+        await this.userStatus.set(newStatus, this.pauseNotifications);
+      } else {
+        // Fallback falls userStatus service in dieser Version fehlt
+        await this.currentUser.saveStatus(newStatus);
+      }
+      this.args.closeModal();
+    } catch (e) {
+      if (typeof e === "string") this.dialog.alert(e);
+      else console.error(e);
+    }
   }
 }
