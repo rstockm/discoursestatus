@@ -1,0 +1,48 @@
+<li class="header-dropdown-toggle team-status-header-icon {{if this.isDropdownOpen "active"}}">
+  <a
+    href
+    class="icon btn-flat"
+    {{on "click" this.toggleDropdown}}
+    title="Team Status"
+    id="team-status-button"
+  >
+    {{d-icon this.icon}}
+  </a>
+
+  {{#if this.isDropdownOpen}}
+    <div class="menu-panel drop-down" {{on-click-outside this.closeDropdown}}>
+      <div class="panel-body">
+        <div class="panel-body-contents">
+          <ul class="team-status-list">
+            {{#if this.isLoading}}
+              <li class="loading-state">Lade Team...</li>
+            {{else}}
+              {{#each this.teamMembers as |member|}}
+                <li class="team-member-item">
+                  <div class="member-avatar">
+                    <a href="/u/{{member.username}}" data-user-card={{member.username}}>
+                      {{avatar member imageSize="small"}}
+                    </a>
+                    {{#if (eq member.status.emoji "green_circle")}}
+                      <!-- Optional: Eigener Indikator für "online" -->
+                    {{/if}}
+                  </div>
+                  <div class="member-info">
+                    <a class="member-username" href="/u/{{member.username}}">{{member.username}}</a>
+                    {{#if member.status}}
+                      <span class="member-status">
+                        {{replace-emoji (concat ":" member.status.emoji ":")}} {{member.status.description}}
+                      </span>
+                    {{/if}}
+                  </div>
+                </li>
+              {{else}}
+                <li class="empty-state">Keine Teammitglieder in Gruppe "{{theme-setting 'team_status_group'}}" gefunden.</li>
+              {{/each}}
+            {{/if}}
+          </ul>
+        </div>
+      </div>
+    </div>
+  {{/if}}
+</li>

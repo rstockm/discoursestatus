@@ -1,0 +1,45 @@
+<DModal @title="Status festlegen" @closeModal={{@closeModal}} class="user-status-custom-modal">
+  <div class="user-status-modal-content">
+    
+    {{#if this.history.length}}
+      <div class="status-section">
+        <h3>Häufig genutzt</h3>
+        <div class="history-grid">
+          {{#each this.history as |hist|}}
+            <DButton 
+              class="btn-default preset-btn" 
+              @action={{fn this.setStatus hist.emoji hist.name}}>
+              {{replace-emoji (concat ":" hist.emoji ":")}} <span class="preset-name">{{hist.name}}</span>
+            </DButton>
+          {{/each}}
+        </div>
+      </div>
+    {{/if}}
+
+    <div class="status-section">
+      <h3>Schnellauswahl</h3>
+      <div class="preset-grid">
+        {{#each this.presets as |preset|}}
+          <DButton 
+            class="btn-default preset-btn" 
+            @action={{fn this.setStatus preset.emoji preset.name}}>
+            {{replace-emoji (concat ":" preset.emoji ":")}} <span class="preset-name">{{preset.name}}</span>
+          </DButton>
+        {{/each}}
+      </div>
+    </div>
+
+    <div class="status-section custom-status">
+      <h3>Eigener Status</h3>
+      <div class="custom-inputs">
+        <Input @type="text" @value={{this.customEmoji}} class="emoji-input" placeholder="Emoji (ohne ::)" />
+        <Input @type="text" @value={{this.customText}} maxlength="30" placeholder="Eigener Status (max. 30 Zeichen)" class="text-input" />
+        <DButton @action={{this.saveCustomStatus}} @label="theme_translations.save" class="btn-primary" />
+      </div>
+    </div>
+
+    <div class="status-actions">
+      <DButton @action={{this.clearStatus}} class="btn-danger" @icon="trash-alt" label="Status löschen" />
+    </div>
+  </div>
+</DModal>
