@@ -207,18 +207,25 @@ export default class UserStatusCustomModal extends Component {
 
     this.saveToHistory(this.status.emoji, this.status.description);
 
-    // Format `ends_at` as ISO string if it's a valid date/time, otherwise use exactly what was passed.
-    // Discourse time shortcuts (like moment.js objects) might need formatting, or they might be raw strings.
+    // Format `ends_at` as ISO string to ensure compatibility with Discourse API
     let formattedEndsAt = null;
     if (this.status.endsAt) {
-      if (typeof this.status.endsAt === "string") {
+      try {
+        if (typeof this.status.endsAt.toISOString === "function") {
+          formattedEndsAt = this.status.endsAt.toISOString();
+        } else if (typeof this.status.endsAt.toDate === "function") {
+          formattedEndsAt = this.status.endsAt.toDate().toISOString();
+        } else {
+          const d = new Date(this.status.endsAt);
+          if (!isNaN(d.getTime())) {
+            formattedEndsAt = d.toISOString();
+          } else {
+            formattedEndsAt = this.status.endsAt;
+          }
+        }
+      } catch (err) {
+        console.error("Error formatting date", err);
         formattedEndsAt = this.status.endsAt;
-      } else if (typeof this.status.endsAt.toISOString === "function") {
-        formattedEndsAt = this.status.endsAt.toISOString();
-      } else if (this.status.endsAt.format) { // Moment.js handling which Discourse often uses
-        formattedEndsAt = this.status.endsAt.format();
-      } else {
-        formattedEndsAt = new Date(this.status.endsAt).toISOString();
       }
     }
 
