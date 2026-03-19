@@ -33,7 +33,6 @@
       <div class="status-section custom-status">
         <h3>Eigener Status</h3>
         <div class="control-group">
-          {{!-- Discourse Core Komponente für das Emoji/Text Feld --}}
           <UserStatusPicker @status={{this.status}} />
         </div>
 
@@ -47,16 +46,24 @@
         <div class="control-group control-group-remove-status" style="margin-top: 15px;">
           <h3>{{i18n "user_status.remove_status"}}</h3>
 
-          {{!-- Discourse Core Komponente für Datum/Zeit (nur noch für Custom Datum genutzt) --}}
           <div class="custom-time-picker-wrapper">
-            <TimeShortcutPicker
-              @timeShortcuts={{this.timeShortcutsArray}}
-              @hiddenOptions={{this.hiddenTimeShortcutOptions}}
-              @customLabels={{this.customTimeShortcutLabels}}
-              @prefilledDatetime={{this.prefilledDateTime}}
-              @onTimeSelected={{this.onTimeSelected}}
-              @_itsatrap={{this._itsatrap}}
-            />
+            <DButton 
+              class="btn-default btn {{if this.isCustomActive 'active'}}" 
+              @action={{this.toggleCustomPicker}}
+            >
+              Datum und Uhrzeit auswählen
+            </DButton>
+
+            {{#if this.showCustomPicker}}
+              <div class="native-date-picker-container">
+                <input 
+                  type="datetime-local" 
+                  value={{this.customDateTimeLocal}}
+                  {{on "change" this.onCustomDateTimeChange}}
+                  class="native-date-input"
+                />
+              </div>
+            {{/if}}
           </div>
 
           <div class="inline-time-shortcuts">

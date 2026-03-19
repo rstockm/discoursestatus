@@ -139,28 +139,41 @@
     }
   }
 
-  /* Time Shortcut Picker anpassen (nur noch für Custom Datum genutzt) */
+  /* Custom Time Picker Button und Native Input */
   .custom-time-picker-wrapper {
     margin-bottom: 8px;
     width: 100%;
-    
-    .select-kit {
-      width: 100% !important;
-    }
-    
-    .select-kit-header {
+
+    .btn {
+      justify-content: center; /* Zentriert für diesen Button */
+      padding: 8px 12px;
+      width: 100%;
       background-color: var(--primary-low) !important;
-      border: 1px solid var(--primary-medium) !important;
-      justify-content: center !important;
-      font-weight: bold !important;
-      padding: 10px 12px !important;
-      border-radius: 4px;
-      cursor: pointer !important;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+      border: 1px solid transparent !important;
+      color: var(--primary) !important;
+      font-weight: normal !important;
       
       &:hover {
         background-color: var(--primary-low-mid) !important;
-        border-color: var(--primary-high) !important;
+      }
+      
+      &.active {
+        background-color: var(--primary-low-mid) !important;
+        border-color: var(--primary-medium) !important;
+      }
+    }
+
+    .native-date-picker-container {
+      margin-top: 8px;
+      width: 100%;
+      
+      .native-date-input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid var(--primary-medium);
+        border-radius: 4px;
+        background: var(--secondary);
+        color: var(--primary);
       }
     }
   }
@@ -178,17 +191,7 @@
   }
 }
 
-/* Verstecke die Dropdown-Inhalte, die wir nicht mehr brauchen, falls das Dropdown geöffnet wird */
-.time-shortcut-picker {
-  .select-kit-row {
-    .time, .d-icon {
-      display: none !important;
-    }
-  }
-  .select-kit-row[data-value="custom"] {
-    order: -1 !important;
-  }
-}
+/* Ausgebaut: Native Date Picker wird stattdessen genutzt */
 
 /* Team Status CSS */
 .team-status-header-icon {
