@@ -78,11 +78,13 @@ export default class UserStatusCustomModal extends Component {
   }
 
   get prefilledDateTime() {
-    // Verhindert, dass der Custom Picker aufklappt, wenn wir einen Inline-Button klicken
-    if (this.selectedShortcutId && this.selectedShortcutId !== "custom") {
-      return null;
+    // Verhindert, dass der Custom Picker aufklappt, außer "Custom" wurde explizit gewählt
+    if (this.selectedShortcutId === "custom") {
+      return this.status.endsAt;
     }
-    return this.status.endsAt;
+    // Gebe null zurück, damit das Dropdown initial geschlossen bleibt, 
+    // auch wenn bereits ein Status mit Zeit gesetzt ist.
+    return null;
   }
 
   get customTimeShortcutLabels() {

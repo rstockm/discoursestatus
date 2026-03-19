@@ -3,18 +3,6 @@
 #current-user, .d-header .current-user, .user-menu-toggle, .d-header .user-menu-toggle {
   position: relative !important;
   overflow: visible !important; 
-
-  // Cursor ändert sich zur Anzeige, dass die rechte Seite anders reagiert
-  &:hover::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 50%;
-    height: 100%;
-    cursor: alias;
-    z-index: 101;
-  }
 }
 
 /* 
@@ -74,6 +62,7 @@
     flex-direction: column;
     gap: 20px;
     padding: 10px 0;
+    font-size: var(--font-down-1, 0.9em); /* Eine Stufe kleiner als Standard */
   }
 
   h3 {
@@ -85,8 +74,8 @@
 
   .preset-grid, .history-grid {
     display: grid;
-    /* 4 Spalten Layout für Desktop, ggf. anpassen auf Mobile */
-    grid-template-columns: repeat(4, 1fr) !important;
+    /* 5 Spalten Layout für Desktop */
+    grid-template-columns: repeat(5, 1fr) !important;
     gap: 8px;
 
     .btn {
@@ -117,7 +106,7 @@
 
   // Mobile optimization
   @media screen and (max-width: 500px) {
-    .preset-grid, .history-grid {
+    .preset-grid, .history-grid, .inline-time-shortcuts {
       grid-template-columns: repeat(2, 1fr) !important; // Zweispaltig auf sehr kleinen Displays
     }
   }
@@ -125,7 +114,7 @@
   /* Inline Time Shortcuts (Status entfernen Buttons) */
   .inline-time-shortcuts {
     display: grid;
-    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-columns: repeat(5, 1fr) !important;
     gap: 8px;
     margin-top: 8px;
 
