@@ -1,6 +1,25 @@
 import CoreUserStatusModal from "discourse/components/modal/user-status";
 import { withPluginApi } from "discourse/lib/plugin-api";
 
+/**
+ * Core öffnet user-status mit model: { status, saveAction, deleteAction, … }.
+ * Bei mehreren Theme-Komponenten kann dieselbe Modul-Referenz doppelt gebündelt sein —
+ * dann schlagen Klassenvergleiche fehl. Diese Form ist für das Core-Modal spezifisch genug.
+ */
+function looksLikeCoreUserStatusModalInvocation(modalClass, opts) {
+  if (typeof modalClass !== "function") {
+    return false;
+  }
+  const m = opts?.model;
+  if (!m || typeof m !== "object") {
+    return false;
+  }
+  if (typeof m.saveAction !== "function" || typeof m.deleteAction !== "function") {
+    return false;
+  }
+  return Object.prototype.hasOwnProperty.call(m, "status");
+}
+
 export default {
   name: "user-status-avatar-overlay",
   
@@ -33,8 +52,12 @@ export default {
           const isCoreUserStatus =
             first === "user-status" ||
             first === coreCls ||
-            first === CoreUserStatusModal;
+            first === CoreUserStatusModal ||
+            (typeof first === "function" && first.name === "UserStatusModal");
           if (isCoreUserStatus) {
+            return this._super(customCls, second ?? {});
+          }
+          if (looksLikeCoreUserStatusModalInvocation(first, second)) {
             return this._super(customCls, second ?? {});
           }
           return this._super(...args);

@@ -56,6 +56,9 @@ export default class UserStatusCustomModal extends Component {
     const initial =
       this.args.model?.status ?? this.currentUser?.status;
     this.status = new TrackedStatus(initial);
+    if (typeof this.args.model?.pauseNotifications === "boolean") {
+      this.pauseNotifications = this.args.model.pauseNotifications;
+    }
     this.loadHistory();
   }
 
@@ -286,7 +289,7 @@ export default class UserStatusCustomModal extends Component {
       if (this.isPreferencesCallbackFlow) {
         const save = this.args.model?.saveAction;
         if (typeof save === "function") {
-          await save(newStatus);
+          await save(newStatus, this.pauseNotifications);
         }
       } else if (this.userStatus) {
         await this.userStatus.set(newStatus, this.pauseNotifications);
