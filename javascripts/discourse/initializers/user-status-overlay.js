@@ -1,3 +1,4 @@
+import CoreUserStatusModal from "discourse/components/modal/user-status";
 import { withPluginApi } from "discourse/lib/plugin-api";
 
 export default {
@@ -29,7 +30,11 @@ export default {
           if (first === customCls) {
             return this._super(...args);
           }
-          if (first === "user-status" || first === coreCls) {
+          const isCoreUserStatus =
+            first === "user-status" ||
+            first === coreCls ||
+            first === CoreUserStatusModal;
+          if (isCoreUserStatus) {
             return this._super(customCls, second ?? {});
           }
           return this._super(...args);

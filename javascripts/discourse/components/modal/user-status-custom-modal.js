@@ -28,7 +28,12 @@ class TrackedStatus {
     if (initial) {
       this.emoji = initial.emoji || "speech_balloon";
       this.description = initial.description || "";
-      this.endsAt = initial.ends_at ? new Date(initial.ends_at) : null;
+      const ends =
+        initial.ends_at ??
+        (initial.endsAt && typeof initial.endsAt.toDate === "function"
+          ? initial.endsAt.toDate()
+          : initial.endsAt);
+      this.endsAt = ends ? new Date(ends) : null;
     }
   }
 }
@@ -39,16 +44,27 @@ export default class UserStatusCustomModal extends Component {
   @service userStatus;
   @service dialog;
 
-  @tracked status = new TrackedStatus(this.currentUser?.status);
+  @tracked status;
   @tracked pauseNotifications = false;
   @tracked history = [];
-  
+
   @tracked selectedShortcutId = null;
   @tracked showCustomPicker = false;
 
   constructor() {
     super(...arguments);
+    const initial =
+      this.args.model?.status ?? this.currentUser?.status;
+    this.status = new TrackedStatus(initial);
     this.loadHistory();
+  }
+
+  get hidePauseNotifications() {
+    return !!this.args.model?.hidePauseNotifications;
+  }
+
+  get isPreferencesCallbackFlow() {
+    return typeof this.args.model?.saveAction === "function";
   }
   
   get presets() {
@@ -103,6 +119,10 @@ export default class UserStatusCustomModal extends Component {
   }
 
   get showDeleteButton() {
+    if (this.isPreferencesCallbackFlow) {
+      const s = this.args.model?.status;
+      return !!(s && (s.description || s.emoji));
+    }
     return !!this.currentUser?.status;
   }
 
@@ -211,7 +231,12 @@ export default class UserStatusCustomModal extends Component {
   @action
   async deleteStatus() {
     try {
-      if (this.userStatus) {
+      if (this.isPreferencesCallbackFlow) {
+        const del = this.args.model?.deleteAction;
+        if (typeof del === "function") {
+          await del();
+        }
+      } else if (this.userStatus) {
         await this.userStatus.clear();
       }
       this.args.closeModal();
@@ -258,7 +283,12 @@ export default class UserStatusCustomModal extends Component {
     };
 
     try {
-      if (this.userStatus) {
+      if (this.isPreferencesCallbackFlow) {
+        const save = this.args.model?.saveAction;
+        if (typeof save === "function") {
+          await save(newStatus);
+        }
+      } else if (this.userStatus) {
         await this.userStatus.set(newStatus, this.pauseNotifications);
       } else {
         await this.currentUser.saveStatus(newStatus);
