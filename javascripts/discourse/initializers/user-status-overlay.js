@@ -1,3 +1,4 @@
+import { next } from "@ember/runloop";
 import CoreUserStatusModal from "discourse/components/modal/user-status";
 import { withPluginApi } from "discourse/lib/plugin-api";
 
@@ -5,6 +6,7 @@ import { withPluginApi } from "discourse/lib/plugin-api";
  * Core öffnet user-status mit model: { status, saveAction, deleteAction, … }.
  * Bei mehreren Theme-Komponenten kann dieselbe Modul-Referenz doppelt gebündelt sein —
  * dann schlagen Klassenvergleiche fehl. Diese Form ist für das Core-Modal spezifisch genug.
+ * "status" per `in` prüfen (nicht nur own property), falls das Model ein Proxy/Ember-Object ist.
  */
 function looksLikeCoreUserStatusModalInvocation(modalClass, opts) {
   if (typeof modalClass !== "function") {
@@ -17,52 +19,64 @@ function looksLikeCoreUserStatusModalInvocation(modalClass, opts) {
   if (typeof m.saveAction !== "function" || typeof m.deleteAction !== "function") {
     return false;
   }
-  return Object.prototype.hasOwnProperty.call(m, "status");
+  return "status" in m;
+}
+
+/**
+ * modifyClass am Modal-Service kann durch andere Theme-Komponenten wirkungslos werden.
+ * Die Singleton-Instanz direkt wrappen — so greift die Umleitung zuverlässig.
+ */
+function patchModalServiceInstance(api) {
+  const modal = api.container.lookup("service:modal");
+  if (!modal || modal.__discoursestatusUserStatusShowWrapped) {
+    return;
+  }
+
+  const previous = modal.show.bind(modal);
+  modal.__discoursestatusUserStatusShowWrapped = true;
+
+  modal.show = async function (...args) {
+    const first = args[0];
+    const second = args[1];
+
+    const customFactory = api.container.factoryFor(
+      "component:modal/user-status-custom-modal"
+    );
+    const coreFactory = api.container.factoryFor("component:modal/user-status");
+    const customCls = customFactory?.class;
+    const coreCls = coreFactory?.class;
+
+    if (!customCls) {
+      return previous(...args);
+    }
+    if (first === customCls) {
+      return previous(...args);
+    }
+
+    const isCoreUserStatus =
+      first === "user-status" ||
+      first === coreCls ||
+      first === CoreUserStatusModal ||
+      (typeof first === "function" && first.name === "UserStatusModal");
+
+    if (isCoreUserStatus) {
+      return previous(customCls, second ?? {});
+    }
+    if (looksLikeCoreUserStatusModalInvocation(first, second)) {
+      return previous(customCls, second ?? {});
+    }
+
+    return previous(...args);
+  };
 }
 
 export default {
   name: "user-status-avatar-overlay",
-  
+
   initialize(container) {
     withPluginApi("1.13.0", (api) => {
-      // Menü / Einstellungen öffnen das Core-Modal "user-status" — auf unser Custom-Modal umleiten (ohne Core-JS zu überschreiben).
-      api.modifyClass("service:modal", {
-        pluginId: "discoursestatus-user-status-redirect",
-
-        show() {
-          const args = [...arguments];
-          const first = args[0];
-          const second = args[1];
-
-          const customFactory = api.container.factoryFor(
-            "component:modal/user-status-custom-modal"
-          );
-          const coreFactory = api.container.factoryFor(
-            "component:modal/user-status"
-          );
-          const customCls = customFactory?.class;
-          const coreCls = coreFactory?.class;
-
-          if (!customCls) {
-            return this._super(...args);
-          }
-          if (first === customCls) {
-            return this._super(...args);
-          }
-          const isCoreUserStatus =
-            first === "user-status" ||
-            first === coreCls ||
-            first === CoreUserStatusModal ||
-            (typeof first === "function" && first.name === "UserStatusModal");
-          if (isCoreUserStatus) {
-            return this._super(customCls, second ?? {});
-          }
-          if (looksLikeCoreUserStatusModalInvocation(first, second)) {
-            return this._super(customCls, second ?? {});
-          }
-          return this._super(...args);
-        },
-      });
+      patchModalServiceInstance(api);
+      next(() => patchModalServiceInstance(api));
 
       // Update Placeholder Logik
       const updatePlaceholder = () => {
