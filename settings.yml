@@ -2,3 +2,8 @@ team_status_group:
   default: "team"
   type: string
   description: "Name der Discourse-Gruppe, deren Mitglieder im Team-Status-Dropdown angezeigt werden sollen."
+
+status_presets:
+  default: "house_with_garden,Homeoffice|palm_tree,Urlaub|face_with_medical_mask,Krank|desktop_computer,Büro|train,Mobil|hot_beverage,Pause|spiral_calendar,Meeting|headphones,Fokus|x,Abwesend|books,Publikum"
+  type: list
+  description: "Schnellauswahl-Status: pro Zeile/Eintrag Format Emoji,Anzeigetext (Komma trennt Emoji und Text; Einträge sind eine Liste im Theme)."

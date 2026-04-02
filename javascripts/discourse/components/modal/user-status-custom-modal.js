@@ -52,6 +52,46 @@ export default class UserStatusCustomModal extends Component {
   }
   
   get presets() {
+    const raw =
+      (typeof settings !== "undefined" && settings?.status_presets) ||
+      this.siteSettings?.status_presets;
+
+    const segments = [];
+    if (Array.isArray(raw)) {
+      for (const line of raw) {
+        if (typeof line === "string" && line.trim()) {
+          segments.push(line.trim());
+        }
+      }
+    } else if (typeof raw === "string" && raw.trim()) {
+      for (const part of raw.split("|")) {
+        const t = part.trim();
+        if (t) segments.push(t);
+      }
+    }
+
+    if (segments.length > 0) {
+      try {
+        const list = [];
+        for (const item of segments) {
+          const trimmed = item.trim();
+          if (!trimmed) continue;
+          const parts = trimmed.split(",");
+          if (parts.length >= 2) {
+            list.push({
+              emoji: parts[0].trim(),
+              name: parts.slice(1).join(",").trim(),
+            });
+          }
+        }
+        if (list.length > 0) {
+          return list;
+        }
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn("discoursestatus: could not parse status_presets", e);
+      }
+    }
     return PRESET_STATUSES;
   }
 

@@ -5,7 +5,37 @@ export default {
   
   initialize(container) {
     withPluginApi("1.13.0", (api) => {
-      
+      // Menü / Einstellungen öffnen das Core-Modal "user-status" — auf unser Custom-Modal umleiten (ohne Core-JS zu überschreiben).
+      api.modifyClass("service:modal", {
+        pluginId: "discoursestatus-user-status-redirect",
+
+        show() {
+          const args = [...arguments];
+          const first = args[0];
+          const second = args[1];
+
+          const customFactory = api.container.factoryFor(
+            "component:modal/user-status-custom-modal"
+          );
+          const coreFactory = api.container.factoryFor(
+            "component:modal/user-status"
+          );
+          const customCls = customFactory?.class;
+          const coreCls = coreFactory?.class;
+
+          if (!customCls) {
+            return this._super(...args);
+          }
+          if (first === customCls) {
+            return this._super(...args);
+          }
+          if (first === "user-status" || first === coreCls) {
+            return this._super(customCls, second ?? {});
+          }
+          return this._super(...args);
+        },
+      });
+
       // Update Placeholder Logik
       const updatePlaceholder = () => {
         const currentUser = api.getCurrentUser();
