@@ -69,7 +69,15 @@ export default class UserStatusCustomModal extends Component {
   get isPreferencesCallbackFlow() {
     return typeof this.args.model?.saveAction === "function";
   }
-  
+
+  /** Einstellungen → Konto: Core setzt nur Entwurf newStatus; gleiches Flag wie natives Modal. */
+  get isPreferencesAccountPageFlow() {
+    return (
+      this.args.model?.hidePauseNotifications === true &&
+      typeof this.args.model?.saveAction === "function"
+    );
+  }
+
   get presets() {
     const raw =
       (typeof settings !== "undefined" && settings?.status_presets) ||
@@ -234,7 +242,15 @@ export default class UserStatusCustomModal extends Component {
   @action
   async deleteStatus() {
     try {
-      if (this.isPreferencesCallbackFlow) {
+      if (this.isPreferencesAccountPageFlow) {
+        const del = this.args.model?.deleteAction;
+        if (typeof del === "function") {
+          await del();
+        }
+        if (this.userStatus) {
+          await this.userStatus.clear();
+        }
+      } else if (this.isPreferencesCallbackFlow) {
         const del = this.args.model?.deleteAction;
         if (typeof del === "function") {
           await del();
@@ -286,7 +302,17 @@ export default class UserStatusCustomModal extends Component {
     };
 
     try {
-      if (this.isPreferencesCallbackFlow) {
+      if (this.isPreferencesAccountPageFlow) {
+        const save = this.args.model?.saveAction;
+        if (typeof save === "function") {
+          await save(newStatus, this.pauseNotifications);
+        }
+        if (this.userStatus) {
+          await this.userStatus.set(newStatus, false);
+        } else {
+          await this.currentUser.saveStatus(newStatus);
+        }
+      } else if (this.isPreferencesCallbackFlow) {
         const save = this.args.model?.saveAction;
         if (typeof save === "function") {
           await save(newStatus, this.pauseNotifications);
