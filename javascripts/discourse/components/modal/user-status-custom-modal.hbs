@@ -7,10 +7,13 @@
           <h3>Häufig genutzt</h3>
           <div class="history-grid">
             {{#each this.history as |hist|}}
-              <DButton 
-                class="btn-default preset-btn" 
-                @action={{fn this.setQuickStatus hist.emoji hist.name}}>
-                {{replace-emoji (concat ":" hist.emoji ":")}} <span class="preset-name"> {{hist.name}}</span>
+              <DButton
+                class="btn-default preset-btn"
+                @translatedAriaLabel={{hist.name}}
+                @action={{fn this.setQuickStatus hist.emoji hist.name}}
+              >
+                <span aria-hidden="true">{{replace-emoji (concat ":" hist.emoji ":")}}</span>
+                <span class="preset-name">{{hist.name}}</span>
               </DButton>
             {{/each}}
           </div>
@@ -21,10 +24,13 @@
         <h3>Schnellauswahl</h3>
         <div class="preset-grid">
           {{#each this.presets as |preset|}}
-            <DButton 
-              class="btn-default preset-btn" 
-              @action={{fn this.setQuickStatus preset.emoji preset.name}}>
-              {{replace-emoji (concat ":" preset.emoji ":")}} <span class="preset-name"> {{preset.name}}</span>
+            <DButton
+              class="btn-default preset-btn"
+              @translatedAriaLabel={{preset.name}}
+              @action={{fn this.setQuickStatus preset.emoji preset.name}}
+            >
+              <span aria-hidden="true">{{replace-emoji (concat ":" preset.emoji ":")}}</span>
+              <span class="preset-name">{{preset.name}}</span>
             </DButton>
           {{/each}}
         </div>
