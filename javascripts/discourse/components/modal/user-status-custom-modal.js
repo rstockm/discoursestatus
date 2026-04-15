@@ -308,7 +308,7 @@ export default class UserStatusCustomModal extends Component {
           await save(newStatus, this.pauseNotifications);
         }
         if (this.userStatus) {
-          await this.userStatus.set(newStatus, false);
+          await this.userStatus.set(newStatus, this.pauseNotifications);
         } else {
           await this.currentUser.saveStatus(newStatus);
         }
