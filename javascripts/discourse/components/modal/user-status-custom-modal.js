@@ -243,12 +243,10 @@ export default class UserStatusCustomModal extends Component {
   async deleteStatus() {
     try {
       if (this.isPreferencesAccountPageFlow) {
+        // Nur Core-Callback: Entwurf am Account-Controller; Persistenz über Kontoseiten-Speichern.
         const del = this.args.model?.deleteAction;
         if (typeof del === "function") {
           await del();
-        }
-        if (this.userStatus) {
-          await this.userStatus.clear();
         }
       } else if (this.isPreferencesCallbackFlow) {
         const del = this.args.model?.deleteAction;
@@ -303,14 +301,10 @@ export default class UserStatusCustomModal extends Component {
 
     try {
       if (this.isPreferencesAccountPageFlow) {
+        // Nur Core-Callback: setzt newStatus am Account-Controller; API erst beim Speichern der Kontoseite.
         const save = this.args.model?.saveAction;
         if (typeof save === "function") {
           await save(newStatus, this.pauseNotifications);
-        }
-        if (this.userStatus) {
-          await this.userStatus.set(newStatus, this.pauseNotifications);
-        } else {
-          await this.currentUser.saveStatus(newStatus);
         }
       } else if (this.isPreferencesCallbackFlow) {
         const save = this.args.model?.saveAction;
