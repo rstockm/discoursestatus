@@ -26,6 +26,21 @@ function looksLikeCoreUserStatusModalInvocation(modalClass, opts) {
  * modifyClass am Modal-Service kann durch andere Theme-Komponenten wirkungslos werden.
  * Die Singleton-Instanz direkt wrappen — so greift die Umleitung zuverlässig.
  */
+const STATUS_PLACEHOLDER_LABEL = "Status festlegen";
+
+function openCustomStatusModal(api) {
+  const modalService = api.container.lookup("service:modal");
+  const modalFactory = api.container.factoryFor(
+    "component:modal/user-status-custom-modal"
+  );
+  const customModalComponent = modalFactory
+    ? modalFactory.class
+    : "user-status-custom-modal";
+  if (modalService && customModalComponent) {
+    modalService.show(customModalComponent, { model: {} });
+  }
+}
+
 function patchModalServiceInstance(api) {
   const modal = api.container.lookup("service:modal");
   if (!modal || modal.__discoursestatusUserStatusShowWrapped) {
@@ -96,11 +111,22 @@ export default {
           if (!hasStatus) {
             // Wenn kein Status, zeige Platzhalter
             if (!placeholder) {
-              placeholder = document.createElement('div');
-              placeholder.className = 'status-placeholder-custom';
-              placeholder.innerHTML = '+';
-              placeholder.title = 'Status festlegen'; // Verhindert, dass der "Benachrichtigungen" Tooltip beim Hovern über das + erscheint
-              
+              placeholder = document.createElement("div");
+              placeholder.className = "status-placeholder-custom";
+              placeholder.setAttribute("role", "button");
+              placeholder.setAttribute("tabindex", "0");
+              placeholder.setAttribute("aria-label", STATUS_PLACEHOLDER_LABEL);
+              placeholder.textContent = "+";
+              placeholder.title = STATUS_PLACEHOLDER_LABEL;
+
+              placeholder.addEventListener("keydown", (ev) => {
+                if (ev.key === "Enter" || ev.key === " ") {
+                  ev.preventDefault();
+                  ev.stopPropagation();
+                  openCustomStatusModal(api);
+                }
+              });
+
               const avatar = btn.querySelector('img.avatar');
               if (avatar) {
                 const parent = avatar.parentElement;
@@ -111,9 +137,9 @@ export default {
                 // Exakte Positionierung per JavaScript erzwingen, um CSS-Konflikte des Themes zu umgehen
                 const updatePos = () => {
                   if (!avatar.offsetWidth) return;
-                  // Setze das Icon an die exakte Pixelposition relativ zum Bild
-                  placeholder.style.left = (avatar.offsetLeft + avatar.offsetWidth - 14) + 'px';
-                  placeholder.style.top = (avatar.offsetTop + avatar.offsetHeight - 14) + 'px';
+                  // Setze das Icon an die exakte Pixelposition relativ zum Bild (24px Zielgröße)
+                  placeholder.style.left = (avatar.offsetLeft + avatar.offsetWidth - 16) + 'px';
+                  placeholder.style.top = (avatar.offsetTop + avatar.offsetHeight - 16) + 'px';
                   // Bottom/Right überschreiben, da wir Left/Top nutzen
                   placeholder.style.bottom = 'auto';
                   placeholder.style.right = 'auto';
@@ -126,11 +152,26 @@ export default {
                 btn.appendChild(placeholder);
               }
             } else {
+              if (placeholder.getAttribute("role") !== "button") {
+                placeholder.setAttribute("role", "button");
+                placeholder.setAttribute("tabindex", "0");
+                placeholder.setAttribute(
+                  "aria-label",
+                  STATUS_PLACEHOLDER_LABEL
+                );
+                placeholder.addEventListener("keydown", (ev) => {
+                  if (ev.key === "Enter" || ev.key === " ") {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    openCustomStatusModal(api);
+                  }
+                });
+              }
               // Update position in case of resize/redraw
               const avatar = btn.querySelector('img.avatar');
               if (avatar) {
-                 placeholder.style.left = (avatar.offsetLeft + avatar.offsetWidth - 14) + 'px';
-                 placeholder.style.top = (avatar.offsetTop + avatar.offsetHeight - 14) + 'px';
+                 placeholder.style.left = (avatar.offsetLeft + avatar.offsetWidth - 16) + 'px';
+                 placeholder.style.top = (avatar.offsetTop + avatar.offsetHeight - 16) + 'px';
               }
             }
           } else {
@@ -176,16 +217,7 @@ export default {
         if (shouldOpenModal) {
           e.preventDefault();
           e.stopPropagation();
-          
-          const modalService = api.container.lookup('service:modal');
-          
-          // In neueren Discourse-Versionen (Glimmer) die Klasse suchen, andernfalls String-Name
-          const modalFactory = api.container.factoryFor('component:modal/user-status-custom-modal');
-          const customModalComponent = modalFactory ? modalFactory.class : 'user-status-custom-modal';
-          
-          if (modalService && customModalComponent) {
-            modalService.show(customModalComponent, { model: {} });
-          }
+          openCustomStatusModal(api);
         }
       }, true);
     });

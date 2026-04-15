@@ -14,12 +14,16 @@
   position: absolute !important;
   /* JS setzt top/left zur exakten Positionierung */
   
-  /* Form und Aussehen wie der Original-Status-Kreis */
-  width: 20px !important;
-  height: 20px !important;
+  /* Form und Aussehen wie der Original-Status-Kreis (min. 24px für WCAG 2.5.8 Zielgröße) */
+  width: 24px !important;
+  height: 24px !important;
   border-radius: 50% !important;
   background-color: #e0e0e0 !important; /* farblich ausgegraut nach Vorgabe */
   color: darkgreen !important; /* dunkelgrünes + nach Vorgabe */
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  appearance: none !important;
   
   /* Text-Styling für das "+" */
   font-size: 16px !important;
@@ -38,6 +42,21 @@
   cursor: pointer !important;
   z-index: 9999 !important;
   transition: background-color 0.2s !important;
+
+  &:focus {
+    outline: none !important;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--tertiary, #0088cc) !important;
+    outline-offset: 2px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-placeholder-custom {
+    transition: none !important;
+  }
 }
 
 .status-placeholder-custom:hover {
