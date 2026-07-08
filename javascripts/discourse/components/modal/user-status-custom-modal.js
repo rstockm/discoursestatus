@@ -1,7 +1,10 @@
 import Component from "@glimmer/component";
 import { action } from "@ember/object";
-import { inject as service } from "@ember/service";
+import { trackedObject } from "@ember/reactive/collections";
+import { service } from "@ember/service";
 import { tracked } from "@glimmer/tracking";
+import { getOwner } from "@ember/application";
+import { popupAjaxError } from "discourse/lib/ajax-error";
 import { i18n } from "discourse-i18n";
 import { timeShortcuts } from "discourse/lib/time-shortcut";
 
@@ -15,28 +18,32 @@ const PRESET_STATUSES = [
   { emoji: "spiral_calendar", name: "Meeting" },
   { emoji: "headphones", name: "Fokus" },
   { emoji: "x", name: "Abwesend" },
-  { emoji: "books", name: "Publikum" }
+  { emoji: "books", name: "Publikum" },
 ];
 
 const STORAGE_KEY = "user_status_history";
 
-class TrackedStatus {
-  @tracked emoji = "speech_balloon";
-  @tracked description = "";
-  @tracked endsAt = null;
+const TIME_LABELS = {
+  one_hour: "In einer Stunde",
+  two_hours: "In zwei Stunden",
+  later_today: "Im Laufe des Tages",
+  tomorrow: "Morgen",
+  none: "Nie",
+};
 
-  constructor(initial = {}) {
-    if (initial) {
-      this.emoji = initial.emoji || "speech_balloon";
-      this.description = initial.description || "";
-      const ends =
-        initial.ends_at ??
-        (initial.endsAt && typeof initial.endsAt.toDate === "function"
-          ? initial.endsAt.toDate()
-          : initial.endsAt);
-      this.endsAt = ends ? new Date(ends) : null;
-    }
+function themeTranslation(key, fallback) {
+  if (typeof themePrefix !== "undefined") {
+    return i18n(themePrefix(key));
   }
+  return fallback;
+}
+
+function normalizeStatus(status = {}) {
+  const initial = { ...status };
+  if (initial.ends_at && !initial.endsAt) {
+    initial.endsAt = new Date(initial.ends_at);
+  }
+  return initial;
 }
 
 export default class UserStatusCustomModal extends Component {
@@ -45,7 +52,6 @@ export default class UserStatusCustomModal extends Component {
   @service userStatus;
   @service dialog;
 
-  @tracked status;
   @tracked pauseNotifications = false;
   @tracked history = [];
 
@@ -54,9 +60,9 @@ export default class UserStatusCustomModal extends Component {
 
   constructor() {
     super(...arguments);
-    const initial =
-      this.args.model?.status ?? this.currentUser?.status;
-    this.status = new TrackedStatus(initial);
+    this.status = trackedObject(
+      normalizeStatus(this.args.model?.status ?? this.currentUser?.status)
+    );
     if (typeof this.args.model?.pauseNotifications === "boolean") {
       this.pauseNotifications = this.args.model.pauseNotifications;
     }
@@ -69,14 +75,6 @@ export default class UserStatusCustomModal extends Component {
 
   get isPreferencesCallbackFlow() {
     return typeof this.args.model?.saveAction === "function";
-  }
-
-  /** Einstellungen → Konto: Core setzt nur Entwurf newStatus; gleiches Flag wie natives Modal. */
-  get isPreferencesAccountPageFlow() {
-    return (
-      this.args.model?.hidePauseNotifications === true &&
-      typeof this.args.model?.saveAction === "function"
-    );
   }
 
   get historyEnabled() {
@@ -149,10 +147,7 @@ export default class UserStatusCustomModal extends Component {
   }
 
   get saveDisabled() {
-    if (!this.status.emoji && !this.status.description) {
-      return true;
-    }
-    return false;
+    return !this.status?.emoji || !this.status?.description;
   }
 
   get showDeleteButton() {
@@ -177,13 +172,22 @@ export default class UserStatusCustomModal extends Component {
         d = new Date(this.status.endsAt);
       }
       if (isNaN(d.getTime())) return "";
-      
+
       const tzOffset = d.getTimezoneOffset() * 60000;
-      const localISOTime = (new Date(d.getTime() - tzOffset)).toISOString().slice(0, 16);
+      const localISOTime = new Date(d.getTime() - tzOffset)
+        .toISOString()
+        .slice(0, 16);
       return localISOTime;
     } catch (e) {
       return "";
     }
+  }
+
+  get pauseNotificationsValue() {
+    if (typeof this.args.model?.pauseNotifications === "boolean") {
+      return this.args.model.pauseNotifications;
+    }
+    return this.pauseNotifications;
   }
 
   @action
@@ -206,34 +210,50 @@ export default class UserStatusCustomModal extends Component {
   }
 
   get inlineTimeShortcuts() {
-    if (!this.currentUser) return [];
-    const shortcuts = timeShortcuts(this.currentUser.user_option.timezone);
-    return [
-      {
-        id: "one_hour",
-        name: i18n(themePrefix("time.one_hour")),
-        time: shortcuts.oneHour().time,
-      },
-      {
-        id: "two_hours",
-        name: i18n(themePrefix("time.two_hours")),
-        time: shortcuts.twoHours().time,
-      },
-      {
-        id: "later_today",
-        name: i18n(themePrefix("time.later_today")),
-        time: shortcuts.laterToday().time,
-      },
-      {
-        id: "tomorrow",
-        name: i18n(themePrefix("time.tomorrow")),
-        time: shortcuts.tomorrow().time,
-      },
-      { id: "none", name: i18n(themePrefix("time.none")), time: null },
-    ].map((s) => ({
-      ...s,
-      activeClass: this.selectedShortcutId === s.id ? "active" : "",
-    }));
+    try {
+      const timezone = this.currentUser?.user_option?.timezone;
+      if (!timezone) {
+        return [];
+      }
+      const shortcuts = timeShortcuts(timezone);
+      return [
+        {
+          id: "one_hour",
+          name: themeTranslation("time.one_hour", TIME_LABELS.one_hour),
+          time: shortcuts.oneHour().time,
+        },
+        {
+          id: "two_hours",
+          name: themeTranslation("time.two_hours", TIME_LABELS.two_hours),
+          time: shortcuts.twoHours().time,
+        },
+        {
+          id: "later_today",
+          name: themeTranslation(
+            "time.later_today",
+            TIME_LABELS.later_today
+          ),
+          time: shortcuts.laterToday().time,
+        },
+        {
+          id: "tomorrow",
+          name: themeTranslation("time.tomorrow", TIME_LABELS.tomorrow),
+          time: shortcuts.tomorrow().time,
+        },
+        {
+          id: "none",
+          name: themeTranslation("time.none", TIME_LABELS.none),
+          time: null,
+        },
+      ].map((s) => ({
+        ...s,
+        activeClass: this.selectedShortcutId === s.id ? "active" : "",
+      }));
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn("discoursestatus: could not build time shortcuts", e);
+      return [];
+    }
   }
 
   @action
@@ -264,17 +284,34 @@ export default class UserStatusCustomModal extends Component {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       let parsed = stored ? JSON.parse(stored) : [];
-      
-      const existingIdx = parsed.findIndex(item => item.emoji === emoji && item.name === description);
+
+      const existingIdx = parsed.findIndex(
+        (item) => item.emoji === emoji && item.name === description
+      );
       if (existingIdx >= 0) {
         parsed[existingIdx].count = (parsed[existingIdx].count || 1) + 1;
       } else {
         parsed.push({ emoji, name: description, count: 1 });
       }
-      
+
       localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
     } catch (e) {
       console.error("Could not save status history", e);
+    }
+  }
+
+  #userStatusService() {
+    return (
+      this.userStatus ||
+      getOwner(this)?.lookup("service:user-status")
+    );
+  }
+
+  #handleError(e) {
+    if (typeof e === "string") {
+      this.dialog.alert(e);
+    } else {
+      popupAjaxError(e);
     }
   }
 
@@ -287,84 +324,57 @@ export default class UserStatusCustomModal extends Component {
   @action
   async deleteStatus() {
     try {
-      if (this.isPreferencesAccountPageFlow) {
-        // Nur Core-Callback: Entwurf am Account-Controller; Persistenz über Kontoseiten-Speichern.
-        const del = this.args.model?.deleteAction;
-        if (typeof del === "function") {
-          await del();
+      const del = this.args.model?.deleteAction;
+      if (typeof del === "function") {
+        await del();
+      } else {
+        const userStatus = this.#userStatusService();
+        if (userStatus) {
+          await userStatus.clear();
         }
-      } else if (this.isPreferencesCallbackFlow) {
-        const del = this.args.model?.deleteAction;
-        if (typeof del === "function") {
-          await del();
-        }
-      } else if (this.userStatus) {
-        await this.userStatus.clear();
       }
-      this.args.closeModal();
+      this.args.closeModal?.();
     } catch (e) {
-      if (typeof e === "string") this.dialog.alert(e);
-      else console.error(e);
+      this.#handleError(e);
     }
   }
 
   @action
   async saveStatus() {
-    if (this.status.description.length > 30) {
-      this.dialog.alert(i18n(themePrefix("status.max_length")));
+    if (this.status.description?.length > 30) {
+      this.dialog.alert(
+        themeTranslation(
+          "status.max_length",
+          "Statusmeldung darf maximal 30 Zeichen lang sein."
+        )
+      );
       return;
     }
 
     this.saveToHistory(this.status.emoji, this.status.description);
 
-    let formattedEndsAt = null;
-    if (this.status.endsAt) {
-      try {
-        if (typeof this.status.endsAt.toISOString === "function") {
-          formattedEndsAt = this.status.endsAt.toISOString();
-        } else if (typeof this.status.endsAt.toDate === "function") {
-          formattedEndsAt = this.status.endsAt.toDate().toISOString();
-        } else {
-          const d = new Date(this.status.endsAt);
-          if (!isNaN(d.getTime())) {
-            formattedEndsAt = d.toISOString();
-          } else {
-            formattedEndsAt = this.status.endsAt;
-          }
-        }
-      } catch (err) {
-        console.error("Error formatting date", err);
-        formattedEndsAt = this.status.endsAt;
-      }
-    }
-
     const newStatus = {
       description: this.status.description,
       emoji: this.status.emoji,
-      ends_at: formattedEndsAt,
+      ends_at: this.status.endsAt?.toISOString?.() ?? null,
     };
 
+    const pauseNotifications = this.pauseNotificationsValue;
+
     try {
-      if (this.isPreferencesAccountPageFlow) {
-        // Nur Core-Callback: setzt newStatus am Account-Controller; API erst beim Speichern der Kontoseite.
-        const save = this.args.model?.saveAction;
-        if (typeof save === "function") {
-          await save(newStatus, this.pauseNotifications);
-        }
-      } else if (this.isPreferencesCallbackFlow) {
-        const save = this.args.model?.saveAction;
-        if (typeof save === "function") {
-          await save(newStatus, this.pauseNotifications);
-        }
-      } else if (this.userStatus) {
-        await this.userStatus.set(newStatus, this.pauseNotifications);
+      const save = this.args.model?.saveAction;
+      if (typeof save === "function") {
+        await save(newStatus, pauseNotifications);
       } else {
-        await this.currentUser.saveStatus(newStatus);
+        const userStatus = this.#userStatusService();
+        if (!userStatus) {
+          throw "User status service unavailable";
+        }
+        await userStatus.set(newStatus, pauseNotifications);
       }
-      this.args.closeModal();
+      this.args.closeModal?.();
     } catch (e) {
-      if (typeof e === "string") this.dialog.alert(e);
-      else console.error(e);
+      this.#handleError(e);
     }
   }
 }

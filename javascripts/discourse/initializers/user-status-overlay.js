@@ -36,6 +36,18 @@ function placeholderLabel() {
   return STATUS_PLACEHOLDER_FALLBACK;
 }
 
+function buildStatusModalModel(api) {
+  const currentUser = api.getCurrentUser();
+  const userStatus = api.container.lookup("service:user-status");
+  return {
+    status: currentUser?.status,
+    pauseNotifications: false,
+    saveAction: (status, pauseNotifications) =>
+      userStatus.set(status, pauseNotifications),
+    deleteAction: () => userStatus.clear(),
+  };
+}
+
 function openCustomStatusModal(api) {
   const modalService = api.container.lookup("service:modal");
   const modalFactory = api.container.factoryFor(
@@ -45,8 +57,17 @@ function openCustomStatusModal(api) {
     ? modalFactory.class
     : "user-status-custom-modal";
   if (modalService && customModalComponent) {
-    modalService.show(customModalComponent, { model: {} });
+    modalService.show(customModalComponent, {
+      model: buildStatusModalModel(api),
+    });
   }
+}
+
+function sanitizeModalOpts(opts) {
+  if (!opts || typeof opts !== "object") {
+    return { model: {} };
+  }
+  return { model: opts.model ?? {} };
 }
 
 function patchModalServiceInstance(api) {
@@ -88,10 +109,10 @@ function patchModalServiceInstance(api) {
         (typeof first === "function" && first.name === "UserStatusModal");
 
       if (isCoreUserStatus) {
-        return previous(customCls, second ?? {});
+        return previous(customCls, sanitizeModalOpts(second));
       }
       if (looksLikeCoreUserStatusModalInvocation(first, second)) {
-        return previous(customCls, second ?? {});
+        return previous(customCls, sanitizeModalOpts(second));
       }
 
       return previous(...args);
