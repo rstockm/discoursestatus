@@ -1,6 +1,6 @@
 # Discourse User Status
 
-Discourse theme component that extends the core user status UI with a shared custom modal, configurable presets, optional local status history, and a team status dropdown.
+Discourse theme component that extends the core user status UI with a shared custom modal, configurable presets, and optional local status history.
 
 ## Requirements
 

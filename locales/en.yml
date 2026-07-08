@@ -14,13 +14,8 @@ en:
     later_today: "Later today"
     tomorrow: "Tomorrow"
     none: "Never"
-  team:
-    title: "Team status"
-    loading: "Loading team..."
-    empty: 'No team members found in group "%{group}".'
   theme_metadata:
-    description: "Extended user status modal with quick presets and team overview."
+    description: "Extended user status modal with quick presets."
     settings:
-      team_status_group: "Discourse group for the team status dropdown in the header."
       status_presets: "Quick-select status presets (emoji and display label)."
       enable_status_history: "Remember frequently used statuses in the browser (localStorage)."

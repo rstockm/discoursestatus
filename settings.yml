@@ -1,8 +1,3 @@
-team_status_group:
-  default: "team"
-  type: string
-  description: "Name der Discourse-Gruppe, deren Mitglieder im Team-Status-Dropdown angezeigt werden sollen."
-
 enable_status_history:
   default: true
   type: bool

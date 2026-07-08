@@ -9,7 +9,6 @@ The component extends Discourse's built-in user status feature with:
 - a custom status modal shared across all known status entry points
 - configurable quick-select presets
 - an optional local browser history for frequently used statuses
-- a header "team status" dropdown for members of a configured group
 - an avatar placeholder button for users who do not currently have a status
 - accessibility improvements around emoji rendering, keyboard interaction, and button labels
 
@@ -24,11 +23,8 @@ common/common.scss
 locales/de.yml
 locales/en.yml
 javascripts/discourse/initializers/user-status-overlay.js
-javascripts/discourse/initializers/team-status-initializer.js
 javascripts/discourse/components/modal/user-status-custom-modal.js
 javascripts/discourse/components/modal/user-status-custom-modal.hbs
-javascripts/discourse/components/team-status-header-icon.js
-javascripts/discourse/components/team-status-header-icon.hbs
 docs/ARCHITECTURE.md
 ```
 
@@ -45,14 +41,6 @@ The component was tested against a modern component-based Discourse frontend. Th
 ## Settings
 
 `settings.yml` defines the component's admin-facing configuration.
-
-### `team_status_group`
-
-Type: `string`
-
-Default: `team`
-
-This is the Discourse group whose members are shown in the team status dropdown. The value is validated before being used in an AJAX URL. Only ASCII letters, digits, and underscores are accepted.
 
 ### `enable_status_history`
 
@@ -222,35 +210,6 @@ The placeholder uses manual DOM positioning because the exact header/avatar mark
 
 Review note: this is DOM-level integration rather than a plugin outlet. It is intentionally narrow, but it should be tested with the target header theme and after Discourse header changes.
 
-## Team Status Header Dropdown
-
-The team dropdown consists of:
-
-- `javascripts/discourse/initializers/team-status-initializer.js`
-- `javascripts/discourse/components/team-status-header-icon.js`
-- `javascripts/discourse/components/team-status-header-icon.hbs`
-
-The initializer registers `team-status-header-icon` via `api.addToHeaderIcons` when the API is available.
-
-The component:
-
-1. renders a header `DButton` with the users icon
-2. opens a dropdown panel when clicked
-3. loads group members from `/groups/{group}/members.json`
-4. displays each member's avatar, username, and current status if present
-
-The configured group name is validated before use:
-
-```js
-/^[a-zA-Z0-9_]+$/
-```
-
-Then it is URL-encoded with `encodeURIComponent`.
-
-The dropdown can be closed with Escape, and the rendered status emoji is hidden from assistive technology.
-
-Review note: the group endpoint returns only what the current user is allowed to see. The component does not bypass Discourse permissions.
-
 ## Styling
 
 `common/common.scss` contains all visual styling.
@@ -259,7 +218,6 @@ Main sections:
 
 - avatar placeholder positioning and focus state
 - modal layout, grids, buttons, and time picker
-- team dropdown panel and member list
 
 The component uses Discourse CSS variables such as:
 
@@ -282,8 +240,6 @@ Accessibility-related behavior includes:
 - the avatar placeholder has role, tabindex, keyboard handling, and a visible focus state
 - the native datetime input has a label and `aria-label`
 - the delete button has an accessible label
-- the team dropdown button exposes title, label, and expanded state
-- team-list emojis are hidden from assistive technology
 
 Recommended manual checks:
 
@@ -291,17 +247,8 @@ Recommended manual checks:
 - select a preset with keyboard only
 - save and delete a status with keyboard only
 - confirm a screen reader announces preset names without reading emoji descriptions
-- confirm Escape closes the team dropdown
 
 ## Security and Privacy Notes
-
-### URL Construction
-
-The only setting-derived URL is the team group member request. It is protected by:
-
-- strict whitelist validation
-- `encodeURIComponent`
-- aborting the request for invalid values
 
 ### Local Storage
 
@@ -326,7 +273,6 @@ The Discourse instance must have:
 
 - core user status enabled (`enable_user_status`)
 - access to `/user-status.json` for the current user
-- a valid group configured in `team_status_group` if the team dropdown is used
 
 If saving reports "requested URL or resource could not be found", first verify `enable_user_status`. A disabled core user status feature removes the `/user-status.json` route and causes a 404 during save.
 
@@ -342,10 +288,8 @@ After installing or updating the component:
 6. Save a custom status with an end time and verify `ends_at` behavior.
 7. Delete an existing status.
 8. Toggle `enable_status_history` off and verify no history is shown or written.
-9. Configure a valid `team_status_group` and verify the dropdown loads members.
-10. Configure an invalid group name and verify no request is sent.
-11. Test keyboard navigation and screen reader labels.
-12. Test unrelated Discourse modals to ensure the modal-service wrapper does not interfere.
+9. Test keyboard navigation and screen reader labels.
+10. Test unrelated Discourse modals to ensure the modal-service wrapper does not interfere.
 
 ## Known Maintenance Risks
 

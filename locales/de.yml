@@ -14,13 +14,8 @@ de:
     later_today: "Im Laufe des Tages"
     tomorrow: "Morgen"
     none: "Nie"
-  team:
-    title: "Team Status"
-    loading: "Lade Team..."
-    empty: 'Keine Teammitglieder in Gruppe "%{group}" gefunden.'
   theme_metadata:
-    description: "Erweitertes Benutzer-Status-Modal mit Schnellauswahl und Team-Übersicht."
+    description: "Erweitertes Benutzer-Status-Modal mit Schnellauswahl."
     settings:
-      team_status_group: "Discourse-Gruppe für das Team-Status-Dropdown im Header."
       status_presets: "Schnellauswahl-Status (Emoji und Anzeigetext)."
       enable_status_history: "Häufig genutzte Status im Browser (localStorage) merken."
