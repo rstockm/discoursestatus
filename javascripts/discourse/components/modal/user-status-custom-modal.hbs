@@ -2,9 +2,9 @@
   <:body>
     <div class="user-status-modal-content">
       
-      {{#if this.history.length}}
+      {{#if (and this.historyEnabled this.history.length)}}
         <div class="status-section">
-          <h3>Häufig genutzt</h3>
+          <h3>{{theme-i18n "status.frequently_used"}}</h3>
           <div class="history-grid">
             {{#each this.history as |hist|}}
               <DButton
@@ -21,7 +21,7 @@
       {{/if}}
 
       <div class="status-section">
-        <h3>Schnellauswahl</h3>
+        <h3>{{theme-i18n "status.quick_select"}}</h3>
         <div class="preset-grid">
           {{#each this.presets as |preset|}}
             <DButton
@@ -37,7 +37,7 @@
       </div>
 
       <div class="status-section custom-status">
-        <h3>Eigener Status</h3>
+        <h3>{{theme-i18n "status.own_status"}}</h3>
         <div class="control-group">
           <UserStatusPicker @status={{this.status}} />
         </div>
@@ -58,17 +58,19 @@
             <DButton 
               class="btn-default btn {{if this.isCustomActive 'active'}}" 
               @action={{this.toggleCustomPicker}}
-            >
-              Datum und Uhrzeit auswählen
-            </DButton>
+              @label={{theme-prefix "status.pick_datetime"}}
+            />
 
             {{#if this.showCustomPicker}}
               <div class="native-date-picker-container">
+                <label class="sr-only" for="user-status-datetime-end">{{theme-i18n "status.pick_datetime"}}</label>
                 <input 
+                  id="user-status-datetime-end"
                   type="datetime-local" 
                   value={{this.customDateTimeLocal}}
                   {{on "change" this.onCustomDateTimeChange}}
                   class="native-date-input"
+                  aria-label={{theme-i18n "status.pick_datetime"}}
                 />
               </div>
             {{/if}}
@@ -103,6 +105,7 @@
       <DButton
         @icon="trash-can"
         @action={{this.deleteStatus}}
+        @ariaLabel={{theme-prefix "status.remove"}}
         class="delete-status btn-danger"
       />
     {{/if}}

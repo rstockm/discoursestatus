@@ -1,5 +1,6 @@
 import { next } from "@ember/runloop";
 import CoreUserStatusModal from "discourse/components/modal/user-status";
+import { i18n } from "discourse-i18n";
 import { withPluginApi } from "discourse/lib/plugin-api";
 
 /**
@@ -26,7 +27,14 @@ function looksLikeCoreUserStatusModalInvocation(modalClass, opts) {
  * modifyClass am Modal-Service kann durch andere Theme-Komponenten wirkungslos werden.
  * Die Singleton-Instanz direkt wrappen — so greift die Umleitung zuverlässig.
  */
-const STATUS_PLACEHOLDER_LABEL = "Status festlegen";
+const STATUS_PLACEHOLDER_FALLBACK = "Status festlegen";
+
+function placeholderLabel() {
+  if (typeof themePrefix !== "undefined") {
+    return i18n(themePrefix("placeholder.set_status"));
+  }
+  return STATUS_PLACEHOLDER_FALLBACK;
+}
 
 function openCustomStatusModal(api) {
   const modalService = api.container.lookup("service:modal");
@@ -43,7 +51,11 @@ function openCustomStatusModal(api) {
 
 function patchModalServiceInstance(api) {
   const modal = api.container.lookup("service:modal");
-  if (!modal || modal.__discoursestatusUserStatusShowWrapped) {
+  if (
+    !modal ||
+    modal.__discoursestatusUserStatusShowWrapped ||
+    typeof modal.show !== "function"
+  ) {
     return;
   }
 
@@ -51,37 +63,43 @@ function patchModalServiceInstance(api) {
   modal.__discoursestatusUserStatusShowWrapped = true;
 
   modal.show = async function (...args) {
-    const first = args[0];
-    const second = args[1];
+    try {
+      const first = args[0];
+      const second = args[1];
 
-    const customFactory = api.container.factoryFor(
-      "component:modal/user-status-custom-modal"
-    );
-    const coreFactory = api.container.factoryFor("component:modal/user-status");
-    const customCls = customFactory?.class;
-    const coreCls = coreFactory?.class;
+      const customFactory = api.container.factoryFor(
+        "component:modal/user-status-custom-modal"
+      );
+      const coreFactory = api.container.factoryFor("component:modal/user-status");
+      const customCls = customFactory?.class;
+      const coreCls = coreFactory?.class;
 
-    if (!customCls) {
+      if (!customCls) {
+        return previous(...args);
+      }
+      if (first === customCls) {
+        return previous(...args);
+      }
+
+      const isCoreUserStatus =
+        first === "user-status" ||
+        first === coreCls ||
+        first === CoreUserStatusModal ||
+        (typeof first === "function" && first.name === "UserStatusModal");
+
+      if (isCoreUserStatus) {
+        return previous(customCls, second ?? {});
+      }
+      if (looksLikeCoreUserStatusModalInvocation(first, second)) {
+        return previous(customCls, second ?? {});
+      }
+
+      return previous(...args);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn("discoursestatus: modal redirect failed, using core modal", e);
       return previous(...args);
     }
-    if (first === customCls) {
-      return previous(...args);
-    }
-
-    const isCoreUserStatus =
-      first === "user-status" ||
-      first === coreCls ||
-      first === CoreUserStatusModal ||
-      (typeof first === "function" && first.name === "UserStatusModal");
-
-    if (isCoreUserStatus) {
-      return previous(customCls, second ?? {});
-    }
-    if (looksLikeCoreUserStatusModalInvocation(first, second)) {
-      return previous(customCls, second ?? {});
-    }
-
-    return previous(...args);
   };
 }
 
@@ -115,9 +133,9 @@ export default {
               placeholder.className = "status-placeholder-custom";
               placeholder.setAttribute("role", "button");
               placeholder.setAttribute("tabindex", "0");
-              placeholder.setAttribute("aria-label", STATUS_PLACEHOLDER_LABEL);
+              placeholder.setAttribute("aria-label", placeholderLabel());
               placeholder.textContent = "+";
-              placeholder.title = STATUS_PLACEHOLDER_LABEL;
+              placeholder.title = placeholderLabel();
 
               placeholder.addEventListener("keydown", (ev) => {
                 if (ev.key === "Enter" || ev.key === " ") {
@@ -157,7 +175,7 @@ export default {
                 placeholder.setAttribute("tabindex", "0");
                 placeholder.setAttribute(
                   "aria-label",
-                  STATUS_PLACEHOLDER_LABEL
+                  placeholderLabel()
                 );
                 placeholder.addEventListener("keydown", (ev) => {
                   if (ev.key === "Enter" || ev.key === " ") {

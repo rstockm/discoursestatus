@@ -30,17 +30,36 @@ export default class TeamStatusHeaderIcon extends Component {
     this.isDropdownOpen = false;
   }
 
+  @action
+  onTeamButtonKeyDown(event) {
+    if (event.key === "Escape" && this.isDropdownOpen) {
+      event.stopPropagation();
+      this.closeDropdown();
+    }
+  }
+
   async fetchTeamMembers() {
     this.isLoading = true;
     try {
-      // theme settings variable "team_status_group" defined in settings.yml
-      const groupName = settings.team_status_group || "team";
-      const response = await ajax(`/groups/${groupName}/members.json`);
+      const rawGroup = settings.team_status_group || "team";
+      const groupName = String(rawGroup).trim();
+      if (!/^[a-zA-Z0-9_]+$/.test(groupName)) {
+        // eslint-disable-next-line no-console
+        console.warn("discoursestatus: ungültiger Gruppenname", groupName);
+        return;
+      }
+      const response = await ajax(
+        `/groups/${encodeURIComponent(groupName)}/members.json`
+      );
       if (response && response.members) {
         this.teamMembers = response.members;
       }
     } catch (e) {
-      console.error("Could not fetch team members for group", settings.team_status_group, e);
+      console.error(
+        "Could not fetch team members for group",
+        settings.team_status_group,
+        e
+      );
     } finally {
       this.isLoading = false;
     }

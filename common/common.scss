@@ -19,7 +19,7 @@
   height: 24px !important;
   border-radius: 50% !important;
   background-color: #e0e0e0 !important; /* farblich ausgegraut nach Vorgabe */
-  color: darkgreen !important; /* dunkelgrünes + nach Vorgabe */
+  color: #1b5e20 !important; /* dunkelgrünes + für besseren Kontrast auf #e0e0e0 */
   box-sizing: border-box !important;
   margin: 0 !important;
   padding: 0 !important;
@@ -67,7 +67,7 @@
 .d-header .panel .btn-flat:hover .status-placeholder-custom,
 .d-header .panel .btn-flat:focus .status-placeholder-custom {
   background-color: #e0e0e0 !important;
-  color: darkgreen !important;
+  color: #1b5e20 !important;
 }
 
 .d-header .panel .btn-flat:hover .status-placeholder-custom:hover {

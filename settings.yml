@@ -3,7 +3,40 @@ team_status_group:
   type: string
   description: "Name der Discourse-Gruppe, deren Mitglieder im Team-Status-Dropdown angezeigt werden sollen."
 
+enable_status_history:
+  default: true
+  type: bool
+  description: "Häufig genutzte Status lokal im Browser speichern (localStorage)."
+
 status_presets:
-  default: "house_with_garden,Homeoffice|palm_tree,Urlaub|face_with_medical_mask,Krank|desktop_computer,Büro|train,Mobil|hot_beverage,Pause|spiral_calendar,Meeting|headphones,Fokus|x,Abwesend|books,Publikum"
-  type: list
-  description: "Schnellauswahl-Status: pro Zeile/Eintrag Format Emoji,Anzeigetext (Komma trennt Emoji und Text; Einträge sind eine Liste im Theme)."
+  type: objects
+  default:
+    - emoji: house_with_garden
+      name: Homeoffice
+    - emoji: palm_tree
+      name: Urlaub
+    - emoji: face_with_medical_mask
+      name: Krank
+    - emoji: desktop_computer
+      name: Büro
+    - emoji: train
+      name: Mobil
+    - emoji: hot_beverage
+      name: Pause
+    - emoji: spiral_calendar
+      name: Meeting
+    - emoji: headphones
+      name: Fokus
+    - emoji: x
+      name: Abwesend
+    - emoji: books
+      name: Publikum
+  schema:
+    name: preset
+    properties:
+      emoji:
+        type: string
+        required: true
+      name:
+        type: string
+        required: true

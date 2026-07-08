@@ -1,13 +1,14 @@
 <li class="header-dropdown-toggle team-status-header-icon {{if this.isDropdownOpen "active"}}">
-  <a
-    href
+  <DButton
     class="icon btn-flat"
-    {{on "click" this.toggleDropdown}}
-    title="Team Status"
     id="team-status-button"
-  >
-    {{d-icon this.icon}}
-  </a>
+    @icon={{this.icon}}
+    @action={{this.toggleDropdown}}
+    @title={{theme-prefix "team.title"}}
+    @ariaLabel={{theme-prefix "team.title"}}
+    @ariaExpanded={{this.isDropdownOpen}}
+    @onKeyDown={{this.onTeamButtonKeyDown}}
+  />
 
   {{#if this.isDropdownOpen}}
     <div class="menu-panel drop-down" {{on-click-outside this.closeDropdown}}>
@@ -15,7 +16,7 @@
         <div class="panel-body-contents">
           <ul class="team-status-list">
             {{#if this.isLoading}}
-              <li class="loading-state">Lade Team...</li>
+              <li class="loading-state">{{theme-i18n "team.loading"}}</li>
             {{else}}
               {{#each this.teamMembers as |member|}}
                 <li class="team-member-item">
@@ -31,13 +32,16 @@
                     <a class="member-username" href="/u/{{member.username}}">{{member.username}}</a>
                     {{#if member.status}}
                       <span class="member-status">
-                        {{replace-emoji (concat ":" member.status.emoji ":")}} {{member.status.description}}
+                        <span aria-hidden="true">{{replace-emoji (concat ":" member.status.emoji ":")}}</span>
+                        {{member.status.description}}
                       </span>
                     {{/if}}
                   </div>
                 </li>
               {{else}}
-                <li class="empty-state">Keine Teammitglieder in Gruppe "{{theme-setting 'team_status_group'}}" gefunden.</li>
+                <li class="empty-state">
+                  {{theme-i18n "team.empty" group=(theme-setting "team_status_group")}}
+                </li>
               {{/each}}
             {{/if}}
           </ul>

@@ -1,0 +1,26 @@
+en:
+  placeholder:
+    set_status: "Set status"
+  status:
+    frequently_used: "Frequently used"
+    quick_select: "Quick selection"
+    own_status: "Custom status"
+    pick_datetime: "Select date and time"
+    remove: "Remove status"
+    max_length: "Status message must be at most 30 characters."
+  time:
+    one_hour: "In one hour"
+    two_hours: "In two hours"
+    later_today: "Later today"
+    tomorrow: "Tomorrow"
+    none: "Never"
+  team:
+    title: "Team status"
+    loading: "Loading team..."
+    empty: 'No team members found in group "%{group}".'
+  theme_metadata:
+    description: "Extended user status modal with quick presets and team overview."
+    settings:
+      team_status_group: "Discourse group for the team status dropdown in the header."
+      status_presets: "Quick-select status presets (emoji and display label)."
+      enable_status_history: "Remember frequently used statuses in the browser (localStorage)."

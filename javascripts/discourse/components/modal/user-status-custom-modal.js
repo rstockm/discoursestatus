@@ -2,6 +2,7 @@ import Component from "@glimmer/component";
 import { action } from "@ember/object";
 import { inject as service } from "@ember/service";
 import { tracked } from "@glimmer/tracking";
+import { i18n } from "discourse-i18n";
 import { timeShortcuts } from "discourse/lib/time-shortcut";
 
 const PRESET_STATUSES = [
@@ -78,10 +79,35 @@ export default class UserStatusCustomModal extends Component {
     );
   }
 
+  get historyEnabled() {
+    const raw =
+      (typeof settings !== "undefined"
+        ? settings?.enable_status_history
+        : undefined) ??
+      this.siteSettings?.enable_status_history ??
+      true;
+    return raw !== false && raw !== "false";
+  }
+
   get presets() {
     const raw =
       (typeof settings !== "undefined" && settings?.status_presets) ||
       this.siteSettings?.status_presets;
+
+    if (Array.isArray(raw) && raw.length > 0) {
+      const objectList = [];
+      for (const item of raw) {
+        if (item && typeof item === "object" && item.emoji && item.name) {
+          objectList.push({
+            emoji: String(item.emoji).trim(),
+            name: String(item.name).trim(),
+          });
+        }
+      }
+      if (objectList.length > 0) {
+        return objectList;
+      }
+    }
 
     const segments = [];
     if (Array.isArray(raw)) {
@@ -183,14 +209,30 @@ export default class UserStatusCustomModal extends Component {
     if (!this.currentUser) return [];
     const shortcuts = timeShortcuts(this.currentUser.user_option.timezone);
     return [
-      { id: "one_hour", name: "In einer Stunde", time: shortcuts.oneHour().time },
-      { id: "two_hours", name: "In zwei Stunden", time: shortcuts.twoHours().time },
-      { id: "later_today", name: "Im Laufe des Tages", time: shortcuts.laterToday().time },
-      { id: "tomorrow", name: "Morgen", time: shortcuts.tomorrow().time },
-      { id: "none", name: "Nie", time: null }
-    ].map(s => ({
+      {
+        id: "one_hour",
+        name: i18n(themePrefix("time.one_hour")),
+        time: shortcuts.oneHour().time,
+      },
+      {
+        id: "two_hours",
+        name: i18n(themePrefix("time.two_hours")),
+        time: shortcuts.twoHours().time,
+      },
+      {
+        id: "later_today",
+        name: i18n(themePrefix("time.later_today")),
+        time: shortcuts.laterToday().time,
+      },
+      {
+        id: "tomorrow",
+        name: i18n(themePrefix("time.tomorrow")),
+        time: shortcuts.tomorrow().time,
+      },
+      { id: "none", name: i18n(themePrefix("time.none")), time: null },
+    ].map((s) => ({
       ...s,
-      activeClass: this.selectedShortcutId === s.id ? 'active' : ''
+      activeClass: this.selectedShortcutId === s.id ? "active" : "",
     }));
   }
 
@@ -202,6 +244,9 @@ export default class UserStatusCustomModal extends Component {
   }
 
   loadHistory() {
+    if (!this.historyEnabled) {
+      return;
+    }
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
@@ -215,7 +260,7 @@ export default class UserStatusCustomModal extends Component {
   }
 
   saveToHistory(emoji, description) {
-    if (!description) return;
+    if (!this.historyEnabled || !description) return;
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       let parsed = stored ? JSON.parse(stored) : [];
@@ -266,7 +311,7 @@ export default class UserStatusCustomModal extends Component {
   @action
   async saveStatus() {
     if (this.status.description.length > 30) {
-      this.dialog.alert("Statusmeldung darf maximal 30 Zeichen lang sein.");
+      this.dialog.alert(i18n(themePrefix("status.max_length")));
       return;
     }
 
