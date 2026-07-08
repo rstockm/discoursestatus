@@ -1,11 +1,16 @@
 # Discourse User Status
 
-Discourse Theme Component für erweiterte User-Status-Funktionen.
+Discourse theme component that extends the core user status UI with a shared custom modal, configurable presets, optional local status history, and a team status dropdown.
 
-## Dokumentation
+## Requirements
 
-Der vollständige Entwicklungsverlauf (Chat-Protokoll) befindet sich in [`docs/ENTWICKLUNGSVERLAUF.md`](docs/ENTWICKLUNGSVERLAUF.md).
+- Discourse with the core user status feature enabled (`enable_user_status`)
+- Theme component support
+
+## Documentation
+
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full architecture and code review documentation.
 
 ## Installation
 
-Theme Component über die Discourse-Administration unter **Theme Components** hinzufügen und aktualisieren.
+Install or update the repository as a Discourse theme component through the Discourse admin interface.
